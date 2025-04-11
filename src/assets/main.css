@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.5s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateX(-20px);
+    opacity: 0;
+}
+
+/** fade transition **/
+
+.slidedown-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slidedown-leave-active {
+    transition: all 0.5s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slidedown-enter-from,
+.slidedown-leave-to {
+    transform: translateY(-100px);
+    opacity: 0;
+}
+
+/** Page transition **/
+.page-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.page-leave-active {
+    transition: all 0.4s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.page-enter-from {
+    transform: scale(0.8);
+    filter: blur(10px);
+    opacity: 0;
+}
+
+.page-enter-to {
+    transform: scale(1);
+    filter: blur(0);
+    opacity: 1;
+}
+
+.page-leave-from {
+    transform: scale(1);
+    filter: blur(0);
+    opacity: 1;
+}
+
+.page-leave-to {
+    transform: scale(1.2);
+    filter: blur(10px);
+    opacity: 0;
+}
+
+/** Modal transition **/
+
+
+.modal-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.modal-leave-active {
+    transition: all 0.4s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    transform: translateX(-200px);
+    opacity: 0.8;
+}
+/* Style the scrollbar track */
+::-webkit-scrollbar {
+    width: 8px; /* Set the thickness of the track */
+    height: 10px
+  }
+  
+  /* Style the scrollbar thumb (handle) */
+::-webkit-scrollbar-thumb {
+    background-color: rgb(223, 223, 223); /* Customize thumb color */
+    border-radius: 6px; /* Add rounded corners to the thumb */
+    height: 50px
+  }
+  
+  /* Style the scrollbar thumb on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(60, 58, 58, 0.7); /* Change color on hover */
+    height: 50px
+  }
+   * {
+    @apply transition-colors duration-500;
+    }
+
+ #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  border: 3px solid;
+  border-color: #FFF #FFF transparent transparent;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+.loader::after,
+.loader::before {
+  content: '';  
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  border: 3px solid;
+  border-color: transparent transparent #FF3D00 #FF3D00;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  animation: rotationBack 0.5s linear infinite;
+  transform-origin: center center;
+}
+.loader::before {
+  width: 32px;
+  height: 32px;
+  border-color: #FFF #FFF transparent transparent;
+  animation: rotation 1.5s linear infinite;
+}
+    
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 
+@keyframes rotationBack {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+    
