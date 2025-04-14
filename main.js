@@ -1,7 +1,7 @@
-// import { app, BrowserWindow, screen, Menu ,ipcMain } from 'electron';
+// import { app, BrowserWindow, screen, ,ipcMain ,Dialogue } from 'electron';
 // import path from 'path';
 
-const { app, BrowserWindow, screen, Menu ,ipcMain } = require('electron');
+const { app, BrowserWindow, screen, ipcMain ,dialog } = require('electron');
 const path = require('path');
 
 
@@ -49,7 +49,7 @@ app.whenReady().then(createWindow);
 
 
 ipcMain.on('window-minimize', () => {
-  if (win) win.minimize();
+  if (win) win.minimize();    
 });
 
 ipcMain.on('window-maximize', () => {
@@ -60,6 +60,22 @@ ipcMain.on('window-maximize', () => {
   }
 });
 
-ipcMain.on('window-close', () => {
-  if (win) win.close();
+ipcMain.on('window-close', (e) => {
+  if (win) {
+    const choice = dialog.showMessageBoxSync(win, {
+    type: 'question',
+    buttons: ['Cancel', 'Close'],
+    title: 'Confirm',
+    message: 'Are you sure you want to close the app?',
+    defaultId: 1,     // default button
+    cancelId: 0       // cancel button
+  });
+
+  if (choice === 0) {
+    e.preventDefault(); // Cancel the close
+  }
+ else {
+    win.close(); // Close the window
+  }}
 });
+

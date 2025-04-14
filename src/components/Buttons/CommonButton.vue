@@ -6,12 +6,12 @@
             : theme?.themes[theme.currentTheme]?.bg +
             ' ' +
             theme?.themes[theme.currentTheme]?.text,
-        'px-4 py-1 rounded-full hover:translate-x-1 hover:scale-105 transition whitespace-nowrap duration-200 ease-out shadow-md select-none',
+        'px-4 py-1 rounded-full hover:translate-x-1 hover:scale-105 transition whitespace-nowrap duration-200 ease-out shadow-md select-none text-sm',
         'dark:shadow-slate-300 dark:shadow-sm', // Apply dark shadow classes
         attrib === '' ? '' : 'bg-gray-300', classes, // Additional class when `attrib` is not empty
     ]" @click="handleClick">
-        <i :class="icon"></i>
-        {{ buttonText }} <i :class="icon2"></i>
+        <i :class="`${icon} font-extralight text-sm`"></i>
+        {{ buttonText }}<i :class="`${icon2} font-extralight text-sm`"></i>
     </button>
 </template>
 
@@ -28,7 +28,6 @@ const props = defineProps({
     icon: { type: String, default: null },
     icon2: { type: String, default: null },
 });
-
 const handleClick = () => {
     props.action();
 };

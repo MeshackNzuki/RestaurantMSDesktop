@@ -118,7 +118,7 @@ axios.interceptors.response.use(
         <Toast />
         <ConfirmDialog />
         <Sidebar v-if="!(login || pos)" />
-        <TopBar v-if="!(login || pos)" />
+        <TopBar v-if="!(login)" />
 
         <router-view v-slot="{ Component }">
             <div :class="['min-h-screen', !(login || pos) ? 'mt-10' : '']">

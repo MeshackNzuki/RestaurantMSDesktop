@@ -1,9 +1,9 @@
 <template>
-    <nav v-if="!login" ref="sidebar_id" :class="'rounded-e-xl h-screen  fixed left-0 top-0 overflow-scroll bottom-1 dark:text-slate-300 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden shadow-lg  flex-wrap items-center justify-between z-10 py-4  px-6 transition-all ease-in-out duration-300 ' +
+    <nav v-if="!login" ref="sidebar_id" :class="'h-screen  fixed left-0 top-0 overflow-scroll  dark:text-slate-300 md:overflow-y-auto md:flex-row md:flex-nowrap md:overflow-hidden flex-wrap items-center justify-between z-10 py-4  px-6 transition-all ease-in-out duration-300 ' +
         (isDark
             ? ' bg-gradient-to-r from-slate-800 via-sky-950 to-sky-950 '
             : ' bg-gradient-to-r from-white via-slate-50 to-sky-50 ') +
-        (mainStore.sidebarOpen ? ' w-64 ' : '   w-24 ')
+        (mainStore.sidebarOpen ? ' w-62 ' : '   w-24 ')
         ">
         <div
             class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center w-full mx-auto">

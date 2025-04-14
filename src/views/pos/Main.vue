@@ -1,15 +1,6 @@
 <template>
     <div
-        class="font-bold flex bg-blue-100  dark:bg-sky-950 dark:text-slate-200 px-4 justify-between pt-0.5 select-none">
-        <span class="font-bold text-emerald-700 badge badge-success bg-opacity-25"> Connected <i
-                class="pi pi-wifi"></i></span> <span
-            class="text-red-500 font-bold animate-pulse badge badge-error bg-opacity-25"> Offline <i
-                class="pi pi-sort-alt-slash "></i></span>
-        <span class="text-emerald-700 badge badge-success bg-opacity-25"><i class="pi pi-sync pi-spin mx-1 "></i>
-            Syncing </span>
-    </div>
-    <div
-        class="bg-blue-100 dark:bg-sky-950 dark:text-slate-200 h-[calc(100vh-30px)] flex flex-col px-2 pb-2 overflow-hidden select-none">
+        class="bg-blue-100 dark:bg-sky-950 dark:text-slate-200 h-[calc(100vh-30px)] flex flex-col px-2 pb-2 overflow-hidden select-none mt-8 fixed">
         <!-- Top Bar (Fixed Height) -->
         <div class="grid grid-cols-12 h-12 mb-4">
             <!-- Column 1: Span 2 -->
@@ -717,19 +708,53 @@
         </div>
     </dialog>
     <dialog id="calculator_id" class="modal">
-        <div class="modal-box dark:text-slate-200 dark:bg-sky-950 ">
+        <div class="modal-box dark:text-slate-200 dark:bg-sky-950">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1">✕</button>
             </form>
-            <div class="flex align-center justify-center font-mono">
-                <div class="p-4 space-y-4 border rounded shadow-md w-64 select-none">
-                    <input v-model="expression" type="text" class="p-2 border bg-blue-100 rounded w-full"
-                        placeholder="Enter calculation" />
+
+            <div class="flex flex-col items-center font-mono">
+                <!-- Display -->
+                <div class="p-4 space-y-2 border rounded shadow-md w-64 select-none">
+                    <input v-model="expression" type="text" class="p-2 border bg-blue-100 rounded w-full text-right"
+                        placeholder="0" readonly />
                     <p class="text-lg font-bold text-center">{{ result }}</p>
+
+                    <!-- Buttons -->
+                    <div class="grid grid-cols-4 gap-2 mt-2 text-center">
+                        <!-- Row 1 -->
+                        <button class="btn" @click="append('7')">7</button>
+                        <button class="btn" @click="append('8')">8</button>
+                        <button class="btn" @click="append('9')">9</button>
+                        <button class="btn btn-error" @click="backspace()">⌫</button>
+
+                        <!-- Row 2 -->
+                        <button class="btn" @click="append('4')">4</button>
+                        <button class="btn" @click="append('5')">5</button>
+                        <button class="btn" @click="append('6')">6</button>
+                        <button class="btn" @click="append('*')">×</button>
+
+                        <!-- Row 3 -->
+                        <button class="btn" @click="append('1')">1</button>
+                        <button class="btn" @click="append('2')">2</button>
+                        <button class="btn" @click="append('3')">3</button>
+                        <button class="btn" @click="append('-')">−</button>
+
+                        <!-- Row 4 -->
+                        <button class="btn" @click="append('0')">0</button>
+                        <button class="btn" @click="append('.')">.</button>
+                        <button class="btn btn-success" @click="calculate()">=</button>
+                        <button class="btn" @click="append('+')">+</button>
+
+                        <!-- Row 5 -->
+                        <button class="btn col-span-2" @click="append('/')">÷</button>
+                        <button class="btn col-span-2 btn-warning" @click="clear()">C</button>
+                    </div>
                 </div>
             </div>
         </div>
     </dialog>
+
     <dialog id="help" class="modal">
         <div class="modal-box dark:text-slate-200 dark:bg-sky-950 ">
             <form method="dialog">
@@ -762,6 +787,7 @@ import axios from "axios";
 import { useMainStore } from "../../stores";
 import { useToast } from "primevue/usetoast";
 import { useThemeStore } from "../../stores/Theme";
+import { set } from "@vueuse/core";
 
 const toastPrime = useToast();
 
@@ -1242,20 +1268,30 @@ const sendToKitchen = async (ordernumber) => {
             printWindow.close();
         }, 500);
     };
-
 };
-
-
 
 const expression = ref('');
 
+//calculator functions
 const result = computed(() => {
-    try {
-        return eval(expression.value);
-    } catch {
-        return 'Syntax Error!';
-    }
-});
+
+    return eval(expression.value.replace(/[^-()\d/*+.]/g, ''))
+
+})
+
+const append = (val) => {
+    expression.value += val
+}
+
+const clear = () => {
+    expression.value = ''
+}
+
+const backspace = () => {
+    expression.value = expression.value.slice(0, -1)
+}
+
+//Ends calculator functions
 
 const getReservationStatus = (reservations) => {
     if (reservations) {

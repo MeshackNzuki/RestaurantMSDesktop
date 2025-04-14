@@ -1,14 +1,14 @@
 <template>
-    <div class="bg-white fixed top-0 right-0" :class="mainStore.sidebarOpen ? 'left-64' : 'left-24'">
+    <div class="bg-white fixed top-0 right-0" :class="returnClass">
         <div :class="[
-            'flex  w-full flex-row justify-between items-center h-8 dark:text-slate-300  mx-2',
+            'flex  w-full flex-row justify-between items-center h-8 dark:text-slate-300 ps-2',
             theme?.themes[theme.currentTheme]?.text,
             isDark
                 ? ' bg-gradient-to-r from-slate-800 via-sky-950 to-sky-950 '
                 : theme?.themes[theme.currentTheme]?.bg,
         ]" style="right: 0">
             <button @click="mainStore.toggleSidebar()">
-                <i class="pi pi-align-right"></i>
+                <i class="pi pi-bars mx-2 font-extralight text-sm"></i>
             </button>
             <div class="flex">
                 <span class="font-extralight text-sm" v-if="user?.name">{{ greeting() }}, {{ user?.name }}!</span>
@@ -47,13 +47,28 @@
                     <i class="pi pi-cog pi-spin text-sm"></i>
                 </button>
                 <button class="p-1 flex items-center justify-center" @click="minimizeWin()">
-                    <i class="pi pi-window-minimize ont-extralight text-sm"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="5" y="11" width="14" height="1" />
+                    </svg>
                 </button>
                 <button class="p-1 flex items-center justify-center" @click="maximizeWin()">
-                    <i class=" pi pi-window-maximize ont-extralight text-sm"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1">
+
+                        <!-- Shadow copy (slightly offset and darker/lighter) -->
+                        <rect x="6.5" y="6.5" width="12" height="12" stroke="black" opacity="0.4" />
+
+                        <!-- Main icon -->
+                        <rect x="6" y="6" width="12" height="12" />
+                    </svg>
                 </button>
+
                 <button class="p-1 flex items-center justify-center" @click="closeWin()">
-                    <i class="pi pi-times font-extralight text-sm"></i>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor"
+                        stroke-width="1" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
                 </button>
             </div>
         </div>
@@ -113,7 +128,7 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 import { onClickOutside, useDark, useToggle } from "@vueuse/core";
 import { useMainStore } from "../../stores";
@@ -145,6 +160,17 @@ onMounted(() => {
         login.value = true;
     }
     zone.value = route.path;
+
+});
+
+const returnClass = computed(() => {
+    if (route.path === '/pos') {
+        return 'left-0'
+    }
+    if (mainStore.sidebarOpen) {
+        return 'left-60'
+    }
+    return 'left-20'
 });
 console.log("elecron win apisx", window.electronAPI);
 
