@@ -107,11 +107,11 @@
                             </select>
                         </div>
                     </div>
-                    <span class="mb-2 font-bold mt-2">KITCHEN ORDER SUMMERY {{ '(' +
+                    <span class="mb-2  mt-2">KITCHEN ORDER SUMMERY {{ '(' +
                         selectedOrder?.order_number ? selectedOrder?.order_number : '' + ')' }}<span
                             class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
-                            @click="clearOrder()"><i class="pi pi-times me-1"></i>Close Order</span> <span
-                            class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
+                            @click="clearOrder()"><i class="pi pi-times me-1 text-sm font-light"></i>Close Order</span>
+                        <span class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
                             @click="CancelOrder()"><i class="pi pi-trash me-1"></i>Cancel this Order</span></span>
                     <div class="overflow-y-auto  border border-gray-300 rounded-lg max-h-[180px] lg:max-h-[450px] ">
                         <table class="min-w-full ">
@@ -244,7 +244,7 @@
                                     </p>
                                     <hr class="dashed-line">
                                     <p>Order Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                    }}
+                                        }}
                                     </p>
 
                                     <p> Till:576096</p>
@@ -301,7 +301,7 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <p>Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                    }}
+                                        }}
                                     </p>
                                     <p>Order No: {{ selectedOrder?.order_number }}</p>
                                 </div>
@@ -716,8 +716,9 @@
             <div class="flex flex-col items-center font-mono">
                 <!-- Display -->
                 <div class="p-4 space-y-2 border rounded shadow-md w-64 select-none">
-                    <input v-model="expression" type="text" class="p-2 border bg-blue-100 rounded w-full text-right"
-                        placeholder="0" readonly />
+                    <input v-model="expression" type="text"
+                        class="p-2 border bg-blue-100 text-gray-900 rounded w-full text-right" placeholder="0"
+                        readonly />
                     <p class="text-lg font-bold text-center">{{ result }}</p>
 
                     <!-- Buttons -->
@@ -743,7 +744,7 @@
                         <!-- Row 4 -->
                         <button class="btn" @click="append('0')">0</button>
                         <button class="btn" @click="append('.')">.</button>
-                        <button class="btn btn-success" @click="calculate()">=</button>
+                        <button class="btn" @click="append('/')">/</button>
                         <button class="btn" @click="append('+')">+</button>
 
                         <!-- Row 5 -->

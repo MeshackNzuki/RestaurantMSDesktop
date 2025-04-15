@@ -106,14 +106,14 @@ axios.interceptors.response.use(
 </script>
 <template>
     <div v-if="show" id="loader"
-        class="fixed inset-0 flex justify-center items-center bg-sky-950 bg-opacity-5 z-[999] select-none">
+        class="fixed inset-0 flex justify-center items-center bg-sky-950 bg-opacity-5 z-[999] select-none p-4">
         <div class="axiosspinner"></div>
     </div>
 
     <div :class="[
-        'min-h-screen relative antialiased hover:subpixel-antialiased select-none',
+        'h-screen overflow-hidden relative antialiased hover:subpixel-antialiased select-none',
         (themeStore as any).fonts[themeStore.currentFont].font,
-        !(login || pos) ? (mainStore.sidebarOpen ? 'ms-64 p-4' : 'ms-24 p-4') : 'm-0'
+        !(login || pos) ? (mainStore.sidebarOpen ? 'ms-60 ' : 'ms-20 ') : 'm-0'
     ]">
         <Toast />
         <ConfirmDialog />
@@ -121,7 +121,7 @@ axios.interceptors.response.use(
         <TopBar v-if="!(login)" />
 
         <router-view v-slot="{ Component }">
-            <div :class="['min-h-screen', !(login || pos) ? 'mt-10' : '']">
+            <div :class="['h-screen', !(login || pos) ? 'mt-8' : '']">
                 <transition name="page">
                     <component :is="Component" />
                 </transition>

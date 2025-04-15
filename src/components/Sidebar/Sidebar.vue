@@ -3,7 +3,7 @@
         (isDark
             ? ' bg-gradient-to-r from-slate-800 via-sky-950 to-sky-950 '
             : ' bg-gradient-to-r from-white via-slate-50 to-sky-50 ') +
-        (mainStore.sidebarOpen ? ' w-62 ' : '   w-24 ')
+        (mainStore.sidebarOpen ? ' w-60 ' : '   w-20 ')
         ">
         <div
             class="md:flex-col md:items-stretch md:min-h-full md:flex-nowrap px-0 flex flex-wrap items-center w-full mx-auto">
