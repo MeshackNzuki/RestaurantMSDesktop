@@ -7,14 +7,19 @@
                 ? ' bg-gradient-to-r from-slate-800 via-sky-950 to-sky-950 '
                 : theme?.themes[theme.currentTheme]?.bg,
         ]" style="right: 0">
-            <button @click="mainStore.toggleSidebar()">
+            <button v-if="route.path.startsWith('/pos')" @click="() => route.push('/admin')"><i
+                    class="pi pi-wave-pulse ml-1"></i></button>
+            <button v-else @click="mainStore.toggleSidebar()">
                 <i class="pi pi-bars mx-2 font-extralight text-sm"></i>
             </button>
             <div class="flex">
                 <span class="font-extralight text-sm" v-if="user?.name">{{ greeting() }}, {{ user?.name }}!</span>
             </div>
-            <div class="flex justify-center items-center px-4 space-x-2 h-full font-extralight text-sm">
 
+            <div class="flex justify-center items-center px-4 space-x-2 h-full font-extralight text-sm">
+                <button @click="() => syncSales()"><i
+                        :class="['pi pi-sync text-sm text-light', spin ? 'pi-spin' : '']"></i><span class="mx-1"
+                        v-if="spin">AutoSync...</span></button>
                 <label class="cursor-pointer grid place-items-center">
                     <input type="checkbox" value="synthwave"
                         class="toggle theme-controller bg-base-content row-start-1 col-start-1 col-span-2"
@@ -101,7 +106,7 @@
                         i.name }}
             </div>
             <div class="flex flex-col justify-center items-center gap-2 mt-3">
-                <commonButton buttonText="Use Default" icon="pi pi-refresh" :action="() => {
+                <CommonButton buttonText="Use Default" icon="pi pi-refresh" :action="() => {
                     theme.setTheme('Light');
                     theme.setFont('Exo');
                 }
@@ -133,7 +138,7 @@ import { useRoute } from "vue-router";
 import { onClickOutside, useDark, useToggle } from "@vueuse/core";
 import { useMainStore } from "../../stores";
 import { authStore } from "../../stores/authStore";
-import commonButton from "../../components/Buttons/CommonButton.vue";
+import CommonButton from "../../components/Buttons/CommonButton.vue";
 import { useThemeStore } from "../../stores/Theme";
 
 const isDark = useDark({ disableTransition: false });
@@ -153,6 +158,7 @@ const login = ref(false);
 const show = ref(false);
 const zone = ref(null);
 const theme = useThemeStore();
+const spin = ref(false);
 
 onMounted(() => {
     // Access current route properties directly on route object
@@ -218,4 +224,7 @@ const greeting = () => {
     return updateGreeting();
 };
 setInterval(greeting, 60000);
+setInterval(() => {
+    spin.value = !spin.value;
+}, 1000 * 60 * 5);
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-slate-100 dark:bg-sky-950 min-h-screen rounded-md">
+    <div class="bg-slate-100 dark:bg-sky-950 min-h-screen">
         <div class="flex flex-wrap justify-around my-6 py-12 w-full gap-4">
             <StatCard label="Sales" quantity="1008" icon="pi pi-cart-plus" up="up" description="22 sales/2025" />
             <StatCard label="Revenue" quantity="57" icon="pi pi-chart-line" description="5% are BOM" />

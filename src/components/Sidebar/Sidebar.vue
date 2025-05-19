@@ -14,11 +14,8 @@
                         class="md:block text-blueGray-600 text-sm uppercase font-bold p-4 px-0" to="/">
                         <span class="text-sky-500">Go</span>zero
                     </router-link></span>
-
             </div>
-
             <div class="flex flex-col justify-center items-center w-full">
-
                 <!-- User -->
                 <ul class="items-center flex flex-wrap list-none">
                     <li class="inline-block relative">
@@ -105,7 +102,6 @@
                     </nav>
                 </div>
             </div>
-
             <!-- Finance -->
             <div v-if="route.path.startsWith('/finance')" class="mt-0">
                 <span class="w-full flex justify-center text-center text-xs font-bold my-1">
@@ -140,7 +136,6 @@
                     </nav>
                 </div>
             </div>
-
             <!-- Reservations Module -->
             <div v-if="route.path.startsWith('/reservations')" class="mt-0">
                 <span class="w-full flex justify-center text-center text-xs font-bold my-1">Reservations Module</span>
@@ -206,8 +201,6 @@
                     </nav>
                 </div>
             </div>
-
-
             <!-- Inventory Module -->
             <div v-if="route.path.startsWith('/inventory')" class="mt-0">
                 <span class="w-full flex justify-center text-center text-xs font-bold my-1">Inventory Module</span>
@@ -240,7 +233,6 @@
                     </nav>
                 </div>
             </div>
-
             <!-- Transport Module -->
             <div v-if="route.path.startsWith('/transport')" class="mt-0">
                 <span class="w-full flex justify-center text-center text-xs font-bold">Transport Module</span>
@@ -273,8 +265,6 @@
                     </nav>
                 </div>
             </div>
-
-
             <div v-if="route.path.startsWith('/user/profile')" class="mt-0">
                 <span class="w-full flex justify-center text-center text-xs font-bold my-2">Exit</span>
                 <div class="relative flex flex-col rounded-x w-full">
@@ -306,7 +296,6 @@
                     </nav>
                 </div>
             </div>
-
             <hr class="bg-lime-300" />
             <span @click="logout()">
                 <div role="button" tabindex="0"
