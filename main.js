@@ -45,8 +45,9 @@ win = new BrowserWindow({
 
 }
 // Handle app lifecycle
-app.whenReady().then(createWindow);
+app.whenReady().then(createWindow); 
 
+require('./ipc.js'); 
 
 ipcMain.on('window-minimize', () => {
   if (win) win.minimize();    

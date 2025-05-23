@@ -1,9 +1,9 @@
 <template>
     <!-- <Header /> -->
     <div
-        class="bg-gray-50 dark:bg-gray-900 h-screen flex flex-wrap h-100 w-full items-center justify-center overflow-hidden bg-[url('https://img.freepik.com/free-photo/restaurant-interior_1127-3394.jpg?t=st=1739346332~exp=1739349932~hmac=f6935e58f5d1f6f338ba9216101ffb12812c3f089976600da2ca1769141a3faf&w=1380')] bg-cover bg-no-repeat bg-center">
+        class=" h-screen flex flex-wrap h-100 w-full items-center justify-center overflow-hidden bg-[url('https://img.freepik.com/free-photo/restaurant-interior_1127-3394.jpg?t=st=1739346332~exp=1739349932~hmac=f6935e58f5d1f6f338ba9216101ffb12812c3f089976600da2ca1769141a3faf&w=1380')] bg-cover bg-no-repeat bg-center">
         <div class="lg:w-1/2">
-            <section class="dark:bg-gray-900">
+            <section class="">
                 <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                     <div class="font-bold text-gray-900">ROLLINGSTONES EATERY</div>
                     <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
@@ -23,11 +23,10 @@
 
                             <form class="space-y-4 md:space-y-6" @submit.prevent="handleLogin">
                                 <div>
-                                    <label for="email"
+                                    <label for="username"
                                         class="block mb-2 text-smtext-left text-gray-900 dark:text-white font-semibold">Your
-                                        email /
                                         User name</label>
-                                    <input v-model="email" type="email" name="email" id="email"
+                                    <input v-model="username" type="username" name="username" id="username"
                                         class="bg-gray-50 border border-sky-400 text-gray-900 sm:text-sm rounded-full focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
                                         placeholder="name@company.com" required />
                                 </div>
@@ -64,7 +63,6 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import axios from "axios";
 import { authStore } from "../../stores/authStore";
 import Footer from "../../components/Footer.vue";
 import { useRouter } from "vue-router";
@@ -74,7 +72,7 @@ const { login } = authStore();
 
 const { closeSidebar } = useMainStore();
 
-const email = ref("");
+const username = ref("");
 const password = ref("");
 const isLoading = ref(false);
 const router = useRouter();
@@ -83,24 +81,41 @@ const message = ref("");
 const handleLogin = async () => {
     isLoading.value = true;
     message.value = "";
+
     try {
-        const { data } = await axios.post("/login", {
-            email: email.value,
+        const response = await window.electronAPI.login({
+            username: username.value, // or rename to username.value
             password: password.value,
         });
-        login(data.data);
-        if (data.data.roles && data.data.token) {
-            router.push(`/${data.data.roles}`);
+
+        if (response.success) {
+            console.log('Logged in as', response.username, 'Role:', response.role);
+
+            // Optional: store login state
+            login(response); // Assuming this sets global user state
+            // Redirect based on role
+            if (response.role === 1) {
+                router.push("/admin/");
+                console.log('tring role 1',);
+            } else {
+                console.log('tring role 2',);
+                router.push("/admin/pos");
+            }
+        } else {
+            message.value = "Invalid username or password.";
         }
+
     } catch (error) {
-        message.value = error.response?.data?.message || "Please try again!";
+        console.error(error);
+        message.value = "Something went wrong. Please try again!";
+    } finally {
+        isLoading.value = false;
         setTimeout(() => {
             message.value = "";
         }, 6000);
-    } finally {
-        isLoading.value = false;
     }
 };
+
 
 onMounted(() => {
     closeSidebar();

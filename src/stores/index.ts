@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 
 export const useMainStore = defineStore("mainStore", {
-
     
     persist: true,
 
@@ -52,14 +51,6 @@ export const useMainStore = defineStore("mainStore", {
         async startInterval() {
             this.updateGreeting();
             setInterval(this.updateGreeting, 3000);
-        },
-        setClassResults(level : any, description : string){
-            this.current_class_results.level = level;
-            this.current_class_results.description = description;
-        }, 
-        setClassMarks(level : any, description : string){
-            this.current_class_marks.level = level;
-            this.current_class_marks.description = description;
-        }
+        },       
     },
 });

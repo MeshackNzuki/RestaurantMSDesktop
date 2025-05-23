@@ -2,9 +2,8 @@
     "name": "Gozero-Restaurants",
     "version": "0.0.0",
     "private": true,
-    "main": "main.js",  
+    "main": "main.js",
     "author": "Gozero systems",
-    
     "scripts": {
         "dev": "vite",
         "build": "run-p type-check \"build-only {@}\" --",
@@ -15,7 +14,8 @@
         "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
         "format": "prettier --write src/",
         "electron": "cross-env NODE_ENV=DEV electron .",
-        "electron:build": "vite build && electron ."
+        "electron:build": "vite build && electron .",
+        "rebuild": "electron-rebuild -f -w better-sqlite3"
     },
     "dependencies": {
         "@fortawesome/free-brands-svg-icons": "^6.5.1",
@@ -27,6 +27,8 @@
         "@vueuse/motion": "^2.1.0",
         "aos": "^2.3.4",
         "axios": "^1.7.2",
+        "bcryptjs": "^3.0.2",
+        "better-sqlite3": "^11.10.0",
         "chart.js": "^4.4.3",
         "date-fns": "^4.1.0",
         "laravel-vite-plugin": "^1.0.2",
@@ -65,6 +67,7 @@
         "cross-env": "^7.0.3",
         "daisyui": "^4.11.1",
         "electron": "^35.1.5",
+        "electron-rebuild": "^3.2.9",
         "eslint": "^8.49.0",
         "eslint-plugin-vue": "^9.17.0",
         "jsdom": "^24.0.0",

@@ -14,11 +14,9 @@ export const authStore = defineStore("authStore", {
         login(userData) {
             // Perform login operation here...
             // After successful login, update the store's state with user data
-            this.user = userData;
-
-            if (userData.token) {
-                this.is_authenticated = true;
-            }
+            this.user = userData;            
+            this.is_authenticated = true;
+            
         },
         logout() {
             // Perform logout operation here...

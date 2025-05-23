@@ -186,15 +186,14 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     const { user, is_authenticated } = authStore();
-    console.log("Authenticating...", user?.token);
     console.log('user array', user);
 
     // If user is authenticated
     if (is_authenticated) {
-        const userRole = user?.roles[0];
+        const userRole = user.role;
 
         // Allow admin users
-        if (userRole === "admin") {
+        if (userRole === 1) {
             return next();
         }
         // If the route requires a specific role

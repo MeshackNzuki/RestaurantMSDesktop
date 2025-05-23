@@ -35,13 +35,13 @@
             ]">
                 <i v-if="
                     !route.path.startsWith('/admin') &&
-                    user?.roles[0] === 'admin'
+                    user?.role == 1
                 " class="pi pi-arrow-left"></i>
                 <i v-else class="pi pi-box"></i>
 
                 <span v-if="mainStore.sidebarOpen">{{
                     !route.path.startsWith("/admin") &&
-                        user?.roles[0] === "admin"
+                        user?.role == 1
                         ? "Go to Admin"
                         : (zone + " AREA").toUpperCase()
                 }}</span></router-link>

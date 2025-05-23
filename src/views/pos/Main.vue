@@ -244,7 +244,7 @@
                                     </p>
                                     <hr class="dashed-line">
                                     <p>Order Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    }}
                                     </p>
 
                                     <p> Till:576096</p>
@@ -301,7 +301,7 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <p>Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    }}
                                     </p>
                                     <p>Order No: {{ selectedOrder?.order_number }}</p>
                                 </div>
@@ -814,25 +814,25 @@ const customers = ref([{ id: 1, name: "Default Customer" }]);
 
 onMounted(async () => {
     try {
+        window.electronAPI.getCategoriesWithFoods().then(data => {
+            categories.value = data;
+        });
 
-        const categoriesResponse = await axios.get("admin/foods");
+        window.electronAPI.getWaiters().then(data => {
+            waiters.value = data.waiter;
+        });
 
-        categories.value = categoriesResponse.data.data;
+        window.electronAPI.getCustomers().then(data => {
+            customers.value = data;
+        });
 
-        const waitersResponse = await axios.get("/waiters");
+        window.electronAPI.getTables().then(data => {
+            tables.value = data.tables;
+        });
 
-        waiters.value = waitersResponse.data.data.waiter;
-
-        const customersResponse = await axios.get("/customers");
-
-        customers.value = customersResponse.data.data;
-
-        const tablesResponse = await axios.get("admin/tables");
-
-        tables.value = tablesResponse.data.data.tables;
-
-        const response = await axios.get("/admin/zones");
-        zones.value = response.data.data;
+        window.electronAPI.getZones().then(data => {
+            zones.value = data;
+        });
 
 
     } catch (error) {
