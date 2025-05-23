@@ -244,7 +244,7 @@
                                     </p>
                                     <hr class="dashed-line">
                                     <p>Order Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                    }}
+                                        }}
                                     </p>
 
                                     <p> Till:576096</p>
@@ -301,7 +301,7 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <p>Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                    }}
+                                        }}
                                     </p>
                                     <p>Order No: {{ selectedOrder?.order_number }}</p>
                                 </div>
@@ -692,7 +692,7 @@
                     <hr>
                     <div class="flex flex-wrap w-full justify-center">
                         <div v-for="table in tables" :key="zone.id">
-                            <span v-if="table.zone?.name == zone.name">
+                            <span v-if="table.zone_id == zone.id">
                                 <span
                                     class="m-2 flex justify-center rounded-3xl items-center px-4 py-2 cursor-pointer select-none text-white hover:scale-105 transition duration-300"
                                     @click="setSelectedTable(table.id)"
@@ -755,7 +755,6 @@
             </div>
         </div>
     </dialog>
-
     <dialog id="help" class="modal">
         <div class="modal-box dark:text-slate-200 dark:bg-sky-950 ">
             <form method="dialog">

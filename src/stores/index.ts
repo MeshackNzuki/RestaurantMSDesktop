@@ -1,3 +1,4 @@
+import Orders from "@/views/inventory/Orders.vue";
 import { defineStore } from "pinia";
 
 export const useMainStore = defineStore("mainStore", {
@@ -9,8 +10,7 @@ export const useMainStore = defineStore("mainStore", {
         sidebarOpen: false,
         greetings: "Good Morning",
         zoom_levels: ["text-xs", "text-base", "text-lg", "text-xl", "text-2xl"],
-        current_class_results :{level:1, description : 'grade 1'}, // current class in results page
-        current_class_marks :{level:1, description : 'grade 1'}, // current class in marks entry pa page
+        orders: [] 
     }),
     getters: {
         currentZoom: (state) => state.zoom_levels[state.zoom_counter], // Get the current zoom class
@@ -51,6 +51,18 @@ export const useMainStore = defineStore("mainStore", {
         async startInterval() {
             this.updateGreeting();
             setInterval(this.updateGreeting, 3000);
-        },       
+        },   
+          addOrder(order) {
+            this.orders.push(order)
+          },
+      
+          removeOrder(index) {
+            this.orders.splice(index, 1)
+          },
+      
+          clearOrders() {
+            this.orders = []
+          }    
+       
     },
 });
