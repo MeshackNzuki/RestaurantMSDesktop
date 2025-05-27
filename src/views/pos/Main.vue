@@ -1,6 +1,6 @@
 <template>
     <div
-        class="bg-blue-100 dark:bg-sky-950 dark:text-slate-200 h-[calc(100vh-30px)] flex flex-col px-2 pb-2 overflow-hidden select-none mt-8 fixed">
+        class="bg-blue-100 dark:bg-sky-950 dark:text-slate-200 h-[calc(100vh-30px)] flex flex-col px-1 pb-1 overflow-hidden select-none mt-8 fixed">
         <!-- Top Bar (Fixed Height) -->
         <div class="grid grid-cols-12 h-12 mb-4">
             <!-- Column 1: Span 2 -->
@@ -36,14 +36,18 @@
         <!-- Screen Canvas (Fills Remaining Space) -->
         <div class="grid grid-cols-12 flex-1 overflow-hidden">
             <!-- Left Panel (Fixed) -->
-            <div class="col-span-2 border border-gray-500 p-4 text-center">
-                <span class="text-center italics">Latest on top (Highlighted : selected)</span>
-                <div v-if="orders.length > 0">
-                    <div v-for="order in orders
+            <div class="col-span-2 border border-gray-500 p-4 px-1 text-center overflow-y-auto h-full">
+                <span
+                    class="text-center italics sticky top-0 z-10 p-2 bg-blue-100 dark:bg-sky-950 w-full h-full rounded">Latest
+                    on top
+                </span>
+                <div v-if="store.orders.length > 0" class="mt-6">
+                    <div v-for="order in store.orders
                         .filter(o => o.closed)
                         .sort((a, b) => new Date(b.order_time) - new Date(a.order_time))" :key="order.order_number"
-                        @click="selectOrder(order.order_number)" :class="['flex flex-col gap-2 dark:bg-sky-900 overflow-scroll cursor-pointer border border-gray-500 p-2 rounded-lg mb-2',
-                            selectedOrder?.order_number === order.order_number ? 'bg-gray-200 shadow' : '']">
+                        @click="store.selectOrder(order.order_number)"
+                        :class="['flex flex-col gap-2 dark:bg-sky-900 overflow-scroll cursor-pointer border border-gray-500 p-2 rounded-lg mb-2',
+                            store.selectedOrder?.order_number === order.order_number ? 'bg-gray-200 dark:bg-sky-600 shadow-md shadow-yellow' : '']">
                         <div class="flex justify-between">
                             <span class="font-semibold">{{ order.order_number }}</span>
                             <span :class="['badge text-white cursor-pointer ',
@@ -51,7 +55,7 @@
                                 {{ order.order_status }}
                             </span>
                         </div>
-                        <span>Waiter: {{order.waiter_id ? waiters.find(waiter => waiter.id === order.waiter_id).name :
+                        <span>Waiter: {{order.waiter_id ? waiters.find(waiter => waiter.id === order.waiter_id)?.name :
                             ''}}</span>
                         <div>
                             <CommonButton button-text="Send to kitchen" @click="sendToKitchen(order.order_number)" />
@@ -87,8 +91,8 @@
                                 <option v-for="waiter in waiters" :key="waiter.id" :value="waiter.id">{{ waiter.name }}
                                 </option>
                             </select>
-                            <div class="py-2" @click="lock_waiter = !lock_waiter">
-                                <span v-if="lock_waiter" class="badge badge-error text-white animate-pulse">
+                            <div class="py-2 cursor-pointer" @click="lock_waiter = !lock_waiter">
+                                <span v-if="lock_waiter" class="badge badge-error text-white animate-pulse ">
                                     <i class="pi pi-lock me-1"></i> Locked
                                 </span>
                                 <span v-else class="badge badge-info text-white">
@@ -108,11 +112,12 @@
                         </div>
                     </div>
                     <span class="mb-2  mt-2">KITCHEN ORDER SUMMERY {{ '(' +
-                        selectedOrder?.order_number ? selectedOrder?.order_number : '' + ')' }}<span
+                        store.selectedOrder?.order_number ? store.selectedOrder?.order_number : '' + ')' }}<span
                             class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
                             @click="clearOrder()"><i class="pi pi-times me-1 text-sm font-light"></i>Close Order</span>
                         <span class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
-                            @click="CancelOrder()"><i class="pi pi-trash me-1"></i>Cancel this Order</span></span>
+                            @click="CancelOrder()"><i class="pi pi-trash me-1"></i>Cancel this
+                            Order</span></span>
                     <div class="overflow-y-auto  border border-gray-300 rounded-lg max-h-[180px] lg:max-h-[450px] ">
                         <table class="min-w-full ">
                             <thead>
@@ -123,20 +128,21 @@
                                     <th class="py-2 px-2 text-right">Action</th>
                                 </tr>
                             </thead>
-
-                            <tbody v-if="selectedOrder?.items.length > 0">
-                                <tr v-for="(orderItem, index) in selectedOrder?.items" :key="index">
+                            <tbody v-if="store.selectedOrder?.items.length > 0">
+                                <tr v-for="(orderItem, index) in store.selectedOrder?.items" :key="index">
                                     <td class="py-1 px-2 text-start">{{ orderItem.item }}</td>
-                                    <td class="py-1 px-2 flex gap-3"><i @click="() => reduceOrderItem(index)"
-                                            class="pi pi-minus p-2 cursor-pointer"></i>{{
+                                    <td class="py-1 px-2 flex gap-3 font-mono"><i
+                                            @click="() => useMainStore().reduceOrderItem(index)"
+                                            class="pi pi-minus p-2 cursor-pointer "></i>{{
                                                 orderItem.quantity }}<i
-                                            @click="addOrderItem(orderItem.item_category_id, orderItem.item_id)"
+                                            @click="useMainStore().addOrderItem(orderItem.item_category_id, orderItem.item_id, categories)"
                                             class="pi pi-plus p-2 cursor-pointer"></i></td>
-                                    <td class="py-1 px-2 text-right">{{ (orderItem.amount) * orderItem.quantity }}</td>
+                                    <td class="py-1 px-2 text-right font-mono">{{ (orderItem.amount) *
+                                        orderItem.quantity }}</td>
                                     <td class="py-1 px-2 text-right">
                                         <span
-                                            class="badge badge-error text-white hover:scale-105 transition-all duration-300"
-                                            @click="() => removeOrderItem(index)">
+                                            class="badge badge-error cursor-pointer  text-white hover:scale-105 transition-all duration-300"
+                                            @click="() => useMainStore().removeOrderItem(index)">
                                             <i class="pi pi-trash"></i></span>
 
                                     </td>
@@ -147,12 +153,12 @@
                                 Click
                                 items on the
                                 right
-                                to add to
+                                to create a new
                                 order</span>
                         </table>
                     </div>
                     <div class="w-full flex justify-center text-center mt-2">
-                        <CommonButton v-if="selectedOrder?.items.length > 0" :action="() => showModal('invoice')"
+                        <CommonButton v-if="store.selectedOrder?.items.length > 0" :action="() => showModal('invoice')"
                             button-text="View / Print Provisional Invoice" />
                     </div>
                 </div>
@@ -166,7 +172,7 @@
                         <div id="invoice"
                             class="w-full bg-gray-50 border mt-3 dark:bg-sky-950 dark:text-slate-200 p-1 rounded-md">
                             <span class="text-italic font-bold underline">Invoice Summary [{{
-                                selectedOrder?.order_number }} ]</span>
+                                store.selectedOrder?.order_number }} ]</span>
                             <table id="print-invoicex" class=" min-w-full rounded-lg my">
                                 <hr class="">
                                 <thead>
@@ -181,7 +187,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(orderItem, index) in selectedOrder?.items" :key="index">
+                                    <tr v-for="(orderItem, index) in store.selectedOrder?.items" :key="index">
                                         <td class="py-1 px-2 border-b text-start">
                                             {{ orderItem.item }}
                                         </td>
@@ -243,12 +249,12 @@
                                         after Paying the Bill.
                                     </p>
                                     <hr class="dashed-line">
-                                    <p>Order Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    <p>Order Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
+                                    }}
                                     </p>
 
                                     <p> Till:576096</p>
-                                    <p>Order No: {{ selectedOrder?.order_number }}</p>
+                                    <p>Order No: {{ store.selectedOrder?.order_number }}</p>
                                 </div>
                                 <hr class="dashed-line">
                                 <div class="receipt-body">
@@ -257,7 +263,7 @@
                                         <span>AMT</span>
                                     </div>
                                     <hr class="dashed-line">
-                                    <div v-for="(orderItem, index) in selectedOrder?.items" :key="index"
+                                    <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
                                         class="receipt-item">
                                         <span class="item-desc">{{ orderItem.item }}</span>
                                         <span class="item-amount"> {{ orderItem.amount }}</span>
@@ -287,7 +293,7 @@
                                 <hr class="dashed-line">
                                 <div class="receipt-thankyou">
                                     <p>You were served by : {{waiters.find(waiter => waiter.id ===
-                                        selectedOrder?.waiter_id)?.name}}</p>
+                                        store.selectedOrder?.waiter_id)?.name}}</p>
                                     <p>Thank you</p>
                                     <small>Solution by gozerolabs.com</small>
                                 </div>
@@ -300,10 +306,10 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
-                                    <p>Date: {{ new Date(selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    <p>Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
+                                    }}
                                     </p>
-                                    <p>Order No: {{ selectedOrder?.order_number }}</p>
+                                    <p>Order No: {{ store.selectedOrder?.order_number }}</p>
                                 </div>
                                 <hr class="dashed-line">
                                 <div class="receipt-body">
@@ -312,7 +318,7 @@
                                         <span>AMT</span>
                                     </div>
                                     <hr class="dashed-line">
-                                    <div v-for="(orderItem, index) in selectedOrder?.items" :key="index"
+                                    <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
                                         class="receipt-item">
                                         <span class="item-desc">{{ orderItem.item }}</span>
                                         <span class="item-amount"> {{ orderItem.amount }}</span>
@@ -358,7 +364,7 @@
                                 <hr class="dashed-line">
                                 <div class="receipt-thankyou">
                                     <p>You were served by : {{waiters.find(waiter => waiter.id ===
-                                        selectedOrder?.waiter_id)?.name}}</p>
+                                        store.selectedOrder?.waiter_id)?.name}}</p>
                                     <p>Thank you</p>
                                     <small>Solution by gozerolabs.com</small>
                                 </div>
@@ -371,13 +377,13 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
-                                    <p>Order Date:{{ selectedOrder?.order_time }}</p>
-                                    <p>Order No: {{ selectedOrder?.order_number }}</p>
-                                    <p>Table No: {{tables?.find(t => t.id == selectedOrder?.table_id)?.name}}</p>
+                                    <p>Order Date:{{ store.selectedOrder?.order_time }}</p>
+                                    <p>Order No: {{ store.selectedOrder?.order_number }}</p>
+                                    <p>Table No: {{tables?.find(t => t.id == store.selectedOrder?.table_id)?.name}}</p>
                                 </div>
 
                                 <div class="receipt-body">
-                                    <div v-for="(orderItem, index) in selectedOrder?.items" :key="index"
+                                    <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
                                         class="receipt-item">
                                         <span class="item-desc">{{ orderItem.item }}</span>
                                         <span class="item-amount"> {{ orderItem.amount }}</span>
@@ -386,7 +392,7 @@
 
                                 <div class="receipt-thankyou">
                                     <p>Waiter : {{waiters.find(waiter => waiter.id ===
-                                        selectedOrder?.waiter_id)?.name}}</p>
+                                        store.selectedOrder?.waiter_id)?.name}}</p>
                                     <small>Solution by gozerolabs.com</small>
                                 </div>
                             </div>
@@ -406,8 +412,8 @@
                                 <th class="py- px-2 border-t text-left">
                                     Sub Total
                                 </th>
-                                <th class="py- px-2 border-t text-right">
-                                    KES {{ computeTotal }}
+                                <th class="py- px-2 border-t text-right font-mono">
+                                    {{ computeTotal }}
                                 </th>
                             </tr>
                             <tr>
@@ -415,7 +421,7 @@
                                 <th class="py- px-2 border-t text-left">
                                     Discount
                                 </th>
-                                <th class="py- px-2 border-t text-right">
+                                <th class="py- px-2 border-t text-right font-mono">
                                     20
                                 </th>
                             </tr>
@@ -424,7 +430,7 @@
                                 <th class="py- px-2 border-t text-left">
                                     VAT
                                 </th>
-                                <th class="py- px-2 border-t text-right">
+                                <th class="py- px-2 border-t text-right font-mono">
                                     20
                                 </th>
                             </tr>
@@ -433,7 +439,7 @@
                                 <th class="py- px-2 border-t text-left font-bold text-3xl text-error">
                                     Total
                                 </th>
-                                <th class="py-2 px-2 border-t text-right font-bold text-3xl text-error">
+                                <th class="py-2 px-2 border-t text-right font-bold text-3xl text-error font-mono">
                                     KES {{ (computeTotal + 20).toLocaleString() }}
                                 </th>
                             </tr>
@@ -525,18 +531,15 @@
                     <h2 class="text-xl font-bold mb-4">
                         {{ query ? "Search Results" : selectedCategory ? selectedCategory.name : "All Items" }}
                     </h2>
-
                 </div>
                 <!-- Display Foods -->
                 <div class="border px-2">
                     <div class="grid grid-cols-3 gap-4">
                         <div v-for="food in filteredFoods" :key="food.id"
                             class="bg-sky-900 p-2 rounded-lg shadow-sm hover:scale-105 transition duration-300 cursor-pointer flex flex-col items-center"
-                            @click="addOrderItem(food.categoryId, food.id)">
-
+                            @click="useMainStore().addOrderItem(food.categoryId, food.id, categories, selectedCustomer, selectedWaiter, selectedTable)">
                             <img :src="getRandomImage()" alt="Food Image" class="h-32 w-full object-cover rounded"
                                 @error="handleImageError" />
-
                             <h3 class="text-normal text-white font-semibold mt-2">{{ food.name }}</h3>
                             <!-- <small class="text-sm">{{ food.description }}</small> -->
                             <p class="font-bold mt-1 badge badge-success text-white">Ksh {{ food.price }}
@@ -571,7 +574,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(orderItem, index) in selectedOrder?.items" :key="index">
+                            <tr v-for="(orderItem, index) in store.selectedOrder?.items" :key="index">
                                 <td class="py-1 px-2 border-b text-start">
                                     {{ orderItem.item }}
                                 </td>
@@ -629,7 +632,8 @@
                         </div>
 
                         <div class="receipt-body">
-                            <div v-for="(orderItem, index) in selectedOrder?.items" :key="index" class="receipt-item">
+                            <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
+                                class="receipt-item">
                                 <span class="item-desc">{{ orderItem.item }}</span>
                                 <span class="item-amount"> {{ orderItem.amount }}</span>
                             </div>
@@ -788,16 +792,17 @@ import { useMainStore } from "../../stores";
 import { useToast } from "primevue/usetoast";
 import { useThemeStore } from "../../stores/Theme";
 import { set } from "@vueuse/core";
+import { main } from "@popperjs/core";
 
 const toastPrime = useToast();
 
 const theme = useThemeStore();
+const store = useMainStore();
 
 const router = useRouter();
 const query = ref("");
 const selectedWaiter = ref(null);
 const selectedTable = ref(null);
-const selectedOrder = ref(null);
 const orderType = ref("dine_in");
 const selectedCustomer = ref(null);
 const tables = ref(null);
@@ -832,7 +837,6 @@ onMounted(async () => {
         window.electronAPI.getZones().then(data => {
             zones.value = data;
         });
-
 
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -883,87 +887,86 @@ watch(query, (newQuery) => {
     }
 });
 
-watch(selectedOrder, (newValue, oldValue) => {
-    console.log("selectedOrder changed:", oldValue, "=>", newValue);
-});
+// watch(store.selectedOrder, (newValue, oldValue) => {
+//     console.log("store.selectedOrder changed:", oldValue, "=>", newValue);
+// });
 
-watch(selectedTable, (newValue, oldValue) => {
-    console.log("selectedTable changed:", oldValue, "=>", newValue);
-});
+// watch(selectedTable, (newValue, oldValue) => {
+//     console.log("selectedTable changed:", oldValue, "=>", newValue);
+// });
 
-watch(selectedWaiter, (newValue, oldValue) => {
-    console.log("selectedWaiter changed:", oldValue, "=>", newValue);
-});
+// watch(selectedWaiter, (newValue, oldValue) => {
+//     console.log("selectedWaiter changed:", oldValue, "=>", newValue);
+// });
 
 const setSelectedTable = (tableId) => {
     selectedTable.value = tables.value.find(table => table.id === tableId);
-    if (selectedOrder.value) {
-        selectedOrder.table_id = tableId;
+    if (store.selectedOrder) {
+        store.selectedOrder.table_id = tableId;
     }
     closeModals();
 };
 
-const selectOrder = (orderNumber) => {
-    selectedOrder.value = orders.find(order => order.order_number === orderNumber);
-};
+// const selectOrder = (orderNumber) => {
+//     store.selectedOrder = orders.find(order => order.order_number === orderNumber);
+// };
 
-const addOrderItem = (categoryId, itemId) => {
-    let category = categories.value.find(category => category.id === categoryId);
-    if (category) {
-        let item = category.foods.find(food => food.id === itemId);
-        if (item) {
-            if (orders.length === 0 || !selectedOrder.value) {
-                const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}${Math.floor(Math.random() * 9000) + 1000}`;
-                const orderTime = new Date().toISOString();
-                const newOrder = {
-                    order_number: orderNumber,
-                    order_status: "Pending",
-                    order_time: orderTime,
-                    items: [],
-                    customer_id: selectedCustomer.value?.id || null,
-                    waiter_id: selectedWaiter.value?.id || null,
-                    table_id: selectedTable.value?.id || null,
-                };
-                orders.push(newOrder);
-                selectedOrder.value = newOrder;
-            }
+// const addOrderItem = (categoryId, itemId) => {    
+//     let category = categories.value.find(category => category.id === categoryId);
+//     if (category) {
+//         let item = category.foods.find(food => food.id === itemId);
+//         if (item) {
+//             if (orders.length === 0 || !store.selectedOrder) {
+//                 const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}${Math.floor(Math.random() * 9000) + 1000}`;
+//                 const orderTime = new Date().toISOString();
+//                 const newOrder = {
+//                     order_number: orderNumber,
+//                     order_status: "Pending",
+//                     order_time: orderTime,
+//                     items: [],
+//                     customer_id: selectedCustomer.value?.id || null,
+//                     waiter_id: selectedWaiter.value?.id || null,
+//                     table_id: selectedTable.value?.id || null,
+//                 };
+//                 orders.push(newOrder);
+//                 store.selectedOrder = newOrder;
+//             }
 
-            const existingItemIndex = selectedOrder.value.items.findIndex(orderItem => orderItem.item === item.name);
-            if (existingItemIndex > -1) {
-                selectedOrder.value.items[existingItemIndex].quantity += 1;
-            } else {
-                selectedOrder.value.items.push({
-                    item: item.name,
-                    description: item.description,
-                    amount: item.price,
-                    quantity: 1,
-                    item_id: item.id,
-                    item_category_id: categoryId,
-                });
-            }
-        }
-    }
-};
+//             const existingItemIndex = store.selectedOrder.items.findIndex(orderItem => orderItem.item === item.name);
+//             if (existingItemIndex > -1) {
+//                 store.selectedOrder.items[existingItemIndex].quantity += 1;
+//             } else {
+//                 store.selectedOrder.items.push({
+//                     item: item.name,
+//                     description: item.description,
+//                     amount: item.price,
+//                     quantity: 1,
+//                     item_id: item.id,
+//                     item_category_id: categoryId,
+//                 });
+//             }
+//         }
+//     }
+// };
 
-const removeOrderItem = (itemIndex) => {
-    selectedOrder.value.items.splice(itemIndex, 1);
-};
+// const removeOrderItem = (itemIndex) => {
+//     store.selectedOrder.items.splice(itemIndex, 1);
+// };
 
-const reduceOrderItem = (itemIndex) => {
-    if (selectedOrder.value.items[itemIndex].quantity > 1) {
-        selectedOrder.value.items[itemIndex].quantity -= 1;
-    }
-};
+// const reduceOrderItem = (itemIndex) => {
+//     if (store.selectedOrder.items[itemIndex].quantity > 1) {
+//         store.selectedOrder.items[itemIndex].quantity -= 1;
+//     }
+// };
 
 const computeTotal = computed(() => {
-    return selectedOrder.value
-        ? selectedOrder.value.items.reduce((total, item) => total + (item.amount * item.quantity), 0)
+    return store.selectedOrder
+        ? store.selectedOrder.items.reduce((total, item) => total + (item.amount * item.quantity), 0)
         : 0;
 });
 
 const showModal = async (modalId) => {
     const modal = document.getElementById(modalId);
-
     if (modalId === "cash" || modalId === "mpesa" || modalId === "card") {
         await verify_order();
     }
@@ -976,7 +979,7 @@ const acceptCashPayment = async () => {
 
     await verify_order();
 
-    if (selectedOrder.paid) {
+    if (store.selectedOrder.paid) {
         toastPrime.add({
             severity: "error",
             summary: "Error",
@@ -993,6 +996,7 @@ const acceptCashPayment = async () => {
             detail: 'Cash amount is less than total amount',
             life: 2000,
         });
+
         return;
     }
 
@@ -1037,11 +1041,11 @@ const acceptCashPayment = async () => {
 };
 
 const markOrderAsPaid = () => {
-    if (selectedOrder.value) {
-        const orderIndex = orders.findIndex(order => order.order_number === selectedOrder.value.order_number);
+    if (store.selectedOrder) {
+        const orderIndex = orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
         if (orderIndex !== -1) {
             orders[orderIndex].paid = true;
-            selectedOrder.value = null;
+            store.selectedOrder = null;
             toastPrime.add({
                 severity: "success",
                 summary: "Order Paid",
@@ -1056,6 +1060,7 @@ const closeModals = () => {
     const modals = document.querySelectorAll("dialog");
     modals.forEach(modal => modal.close());
 };
+
 // Set order type (e.g., dine-in or take-out)
 const setOrderType = (type) => {
     orderType.value = type;
@@ -1066,27 +1071,31 @@ const setOrderType = (type) => {
 
 // Clear the selected order
 const clearOrder = async () => {
+    await verify_order().then(() => {
+        if (store.selectedOrder) {
+            const orderIndex = useMainStore().orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
+            if (orderIndex !== -1) {
+                store.closeOrder(orderIndex);
+            }
+        }
 
-    await verify_order()
+        store.selectOrder(null);
 
-    if (selectedOrder.value) {
-        const orderIndex = orders.findIndex(order => order.order_number === selectedOrder.value.order_number);
-        if (orderIndex !== -1) {
-            orders[orderIndex].closed = true;
+        selectedTable.value = null;
+        if (!lock_waiter) {
+            selectedWaiter.value = null;
         }
     }
-
-    selectedOrder.value = null;
-    selectedTable.value = null;
-    if (!lock_waiter) {
-        selectedWaiter.value = null;
-    }
+    )
 };
 
 const CancelOrder = () => {
-    if (!selectedOrder.value) return;
 
-    if (selectedOrder.value.closed) {
+    if (!store.selectedOrder) return;
+
+    console.log('store seleced order startus :', store.selectedOrder.closed);
+
+    if (store.selectedOrder.closed) {
         toastPrime.add({
             severity: "error",
             summary: "Error",
@@ -1095,21 +1104,19 @@ const CancelOrder = () => {
         });
         return;
     }
-
-    const orderNumber = selectedOrder.value.orderNumber;
-    const index = orders.findIndex(order => order.orderNumber === orderNumber);
+    const orderNumber = store.selectedOrder.orderNumber;
+    const index = useMainStore().orders.findIndex(order => order.orderNumber === orderNumber);
 
     if (index !== -1) {
-        orders.splice(index, 1);
-        selectedOrder.value = null;
+        useMainStore().orders.splice(index, 1);
+        useMainStore().selectOrder(null)
     }
 };
-
 
 const verify_order = () => {
     return new Promise((resolve, reject) => {
         try {
-            if (!selectedOrder.value) {
+            if (!store.selectedOrder) {
                 toastPrime.add({
                     severity: "error",
                     summary: "Error",
@@ -1120,13 +1127,13 @@ const verify_order = () => {
                 return;
             }
 
-            if (!selectedOrder.value.customer_id) {
-                selectedOrder.value.customer_id = selectedCustomer.value?.id;
+            if (!store.selectedOrder.customer_id) {
+                store.selectedOrder.customer_id = selectedCustomer.value?.id;
             }
 
-            if (!selectedOrder.value.waiter_id) {
+            if (!store.selectedOrder.waiter_id) {
                 if (selectedWaiter.value) {
-                    selectedOrder.value.waiter_id = selectedWaiter.value;
+                    store.selectedOrder.waiter_id = selectedWaiter.value;
                 } else {
                     toastPrime.add({
                         severity: "error",
@@ -1139,9 +1146,9 @@ const verify_order = () => {
                 }
             }
 
-            if (orderType.value === "dine_in" && !selectedOrder.value.table_id) {
+            if (orderType.value === "dine_in" && !store.selectedOrder.table_id) {
                 if (selectedTable.value) {
-                    selectedOrder.value.table_id = selectedTable.value.id;
+                    store.selectedOrder.table_id = selectedTable.value.id;
                 } else {
                     toastPrime.add({
                         severity: "error",
@@ -1154,9 +1161,9 @@ const verify_order = () => {
                 }
             }
 
-            if (!selectedOrder.value.waiter_id) {
+            if (!store.selectedOrder.waiter_id) {
                 if (selectedWaiter.value) {
-                    selectedOrder.value.waiter_id = selectedWaiter.value;
+                    store.selectedOrder.waiter_id = selectedWaiter.value;
                 } else {
                     toastPrime.add({
                         severity: "error",
@@ -1182,14 +1189,9 @@ const printOrder = async () => {
     //commit order
     await verify_order()
 
-    closeModals()
+    clearOrder()
 
-    if (selectedOrder.value) {
-        const orderIndex = orders.findIndex(order => order.order_number === selectedOrder.value.order_number);
-        if (orderIndex !== -1) {
-            orders[orderIndex].closed = true; selectedOrder.value = null;
-        }
-    }
+    closeModals()
 
     toastPrime.add({
         severity: "success",
@@ -1229,16 +1231,16 @@ const printOrder = async () => {
 
 const sendToKitchen = async (ordernumber) => {
 
-    selectOrder(ordernumber)
+    useMainStore().selectOrder(ordernumber)
 
     closeModals()
 
     await verify_order()
 
-    if (selectedOrder.value) {
-        const orderIndex = orders.findIndex(order => order.order_number === selectedOrder.value.order_number);
+    if (store.selectedOrder) {
+        const orderIndex = orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
         if (orderIndex !== -1) {
-            orders[orderIndex].processing = true; selectedOrder.value = null;
+            orders[orderIndex].processing = true; store.selectedOrder = null;
         }
     }
 
