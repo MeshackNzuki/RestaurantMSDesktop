@@ -6,7 +6,7 @@
             <!-- Column 1: Span 2 -->
             <div class="col-span-2 border border-gray-500 p-4 text-center">
                 <div class="flex">
-                    <span class="text-lg font-bold">Order Queue</span>
+                    <span class="text-lg font-bold">Order Queue </span>
                 </div>
             </div>
             <!-- Column 2: Span 5 -->
@@ -43,7 +43,7 @@
                 </span>
                 <div v-if="store.orders.length > 0" class="mt-6">
                     <div v-for="order in store.orders
-                        .filter(o => o.closed)
+                        .filter(o => o.order_placed)
                         .sort((a, b) => new Date(b.order_time) - new Date(a.order_time))" :key="order.order_number"
                         @click="store.selectOrder(order.order_number)"
                         :class="['flex flex-col gap-2 dark:bg-sky-900 overflow-scroll cursor-pointer border border-gray-500 p-2 rounded-lg mb-2',
@@ -86,19 +86,7 @@
                         <div
                             class="flex flex-row gap-2 items-center justify-center border rounded-md px-2 border-gray-500">
                             <label for="waiter" class="block text-sm  font-semibold me-2">Waiter:</label>
-                            <select id="waiter" v-model="selectedWaiter" placeholder="Select waiter"
-                                class="mt-1 block w-full pl-3 pr-10 py-2  border-gray-300 focus:outline-none focus:ring-grey-1000 focus:border-grey-1000 sm:text-sm rounded-md text-gray-800">
-                                <option v-for="waiter in waiters" :key="waiter.id" :value="waiter.id">{{ waiter.name }}
-                                </option>
-                            </select>
-                            <div class="py-2 cursor-pointer" @click="lock_waiter = !lock_waiter">
-                                <span v-if="lock_waiter" class="badge badge-error text-white animate-pulse ">
-                                    <i class="pi pi-lock me-1"></i> Locked
-                                </span>
-                                <span v-else class="badge badge-info text-white">
-                                    <i class="pi pi-unlock me-1"></i> Lock
-                                </span>
-                            </div>
+                            {{ store.currentWaiter?.name }}
                         </div>
                         <div
                             class="flex flex-row gap-2 items-center justify-center border rounded-md px-2 border-gray-500 ">
@@ -132,17 +120,17 @@
                                 <tr v-for="(orderItem, index) in store.selectedOrder?.items" :key="index">
                                     <td class="py-1 px-2 text-start">{{ orderItem.item }}</td>
                                     <td class="py-1 px-2 flex gap-3 font-mono"><i
-                                            @click="() => useMainStore().reduceOrderItem(index)"
+                                            @click="() => store.reduceOrderItem(index)"
                                             class="pi pi-minus p-2 cursor-pointer "></i>{{
                                                 orderItem.quantity }}<i
-                                            @click="useMainStore().addOrderItem(orderItem.item_category_id, orderItem.item_id, categories)"
+                                            @click="store.addOrCreateOrderItem(orderItem.item_category_id, orderItem.item_id, categories)"
                                             class="pi pi-plus p-2 cursor-pointer"></i></td>
                                     <td class="py-1 px-2 text-right font-mono">{{ (orderItem.amount) *
                                         orderItem.quantity }}</td>
                                     <td class="py-1 px-2 text-right">
                                         <span
                                             class="badge badge-error cursor-pointer  text-white hover:scale-105 transition-all duration-300"
-                                            @click="() => useMainStore().removeOrderItem(index)">
+                                            @click="() => store.removeOrderItem(index)">
                                             <i class="pi pi-trash"></i></span>
                                     </td>
                                 </tr>
@@ -536,7 +524,7 @@
                     <div class="grid grid-cols-3 gap-4">
                         <div v-for="food in filteredFoods" :key="food.id"
                             class="bg-sky-900 p-2 rounded-lg shadow-sm hover:scale-105 transition duration-300 cursor-pointer flex flex-col items-center"
-                            @click="useMainStore().addOrderItem(food.categoryId, food.id, categories, selectedCustomer, selectedWaiter, selectedTable)">
+                            @click="store.addOrCreateOrderItem(food.categoryId, food.id, categories, selectedCustomer, selectedTable)">
                             <img :src="getRandomImage()" alt="Food Image" class="h-32 w-full object-cover rounded"
                                 @error="handleImageError" />
                             <h3 class="text-normal text-white font-semibold mt-2">{{ food.name }}</h3>
@@ -758,6 +746,34 @@
             </div>
         </div>
     </dialog>
+    <dialog id="auth" class="modal">
+        <div class="modal-box dark:bg-sky-950 w-80">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1 dark:text-gray-50">✕</button>
+            </form>
+            <div class="flex align-center justify-center">
+                <div class="p-4 space-y-4  ">
+                    <h2 class="text-lg font-bold dark:text-slate-50">Enter Waiter Credentials</h2>
+
+
+                    <div class="flex"><span v-if="message"
+                            class="text-sm w-full px-4 animate animate-pulse text-semibold text-center text-red-600 bg-red-100 rounded-md">{{
+                                message
+                            }}</span>
+
+                    </div>
+                    <div class="flex flex-col space-y-6">
+                        <input v-model="waiter_id" type="text" placeholder="Waiter ID"
+                            class="input input-sm input-bordered w-full rounded-lg " />
+                        <input v-model="waiter_password" type="password" placeholder="Waiter Password"
+                            class="input  input-sm input-bordered w-full rounded-lg" />
+                        <CommonButton button-text="Proceed" icon2="pi pi-arrow-right text-sm mt-1 ms-1"
+                            :action="() => verifyWaiter()" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
     <dialog id="help" class="modal">
         <div class="modal-box dark:text-slate-200 dark:bg-sky-950 ">
             <form method="dialog">
@@ -804,13 +820,16 @@ const selectedWaiter = ref(null);
 const selectedTable = ref(null);
 const orderType = ref("dine_in");
 const selectedCustomer = ref(null);
+const flashMessage = ref(null)
 const tables = ref(null);
 const zones = ref(null);
-const lock_waiter = ref(false);
 const selectedCategory = ref(null);
 const cashAmount = ref(0);
+const waiter_id = ref(null);
+const waiter_password = ref(null);
 
 const orders = reactive([]);
+const message = ref("");
 const categories = ref([]);
 const waiters = ref([]);
 const customers = ref([{ id: 1, name: "Default Customer" }]);
@@ -840,6 +859,9 @@ onMounted(async () => {
     } catch (error) {
         console.error("Error fetching data:", error);
     }
+    onMounted(() => {
+        store.showWaiterLoginModal = false
+    })
 });
 
 // Function to select category
@@ -886,6 +908,17 @@ watch(query, (newQuery) => {
     }
 });
 
+watch(
+    () => store.showWaiterLoginModal, // <-- this is the correct way
+    (val) => {
+        console.log('auth modal changed:', val)
+        if (val) {
+            showModal("auth") // or your modal logic
+            store.showWaiterLoginModal = false
+        }
+    }
+)
+
 // watch(store.selectedOrder, (newValue, oldValue) => {
 //     console.log("store.selectedOrder changed:", oldValue, "=>", newValue);
 // });
@@ -910,7 +943,7 @@ const setSelectedTable = (tableId) => {
 //     store.selectedOrder = orders.find(order => order.order_number === orderNumber);
 // };
 
-// const addOrderItem = (categoryId, itemId) => {    
+// const addOrCreateOrderItem = (categoryId, itemId) => {    
 //     let category = categories.value.find(category => category.id === categoryId);
 //     if (category) {
 //         let item = category.foods.find(food => food.id === itemId);
@@ -1039,6 +1072,43 @@ const acceptCashPayment = async () => {
 
 };
 
+const verifyWaiter = async () => {
+    message.value = ""; // Clear previous messages
+    if (!waiter_id.value) {
+        message.value = "Enter your waiter ID";
+        return;
+    }
+    if (!waiter_password.value) {
+        message.value = "Enter your password";
+        return;
+    }
+    try {
+        const response = await window.electronAPI.loginWaiter({
+            username: waiter_id.value, // or rename to username.value
+            password: waiter_password.value,
+        });
+
+        if (response.success) {
+
+            store.currentWaiter = response.waiter;
+
+            closeModals();
+
+
+        } else {
+            message.value = "Invalid username or password.";
+        }
+
+    } catch (error) {
+        console.error(error);
+        message.value = "Something went wrong. Please try again!";
+    } finally {
+        setTimeout(() => {
+            message.value = "";
+        }, 6000);
+    }
+};
+
 const markOrderAsPaid = () => {
     if (store.selectedOrder) {
         const orderIndex = orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
@@ -1072,18 +1142,16 @@ const setOrderType = (type) => {
 const placeOrder = async () => {
     await verify_order().then(() => {
         if (store.selectedOrder) {
-            const orderIndex = useMainStore().orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
+            const orderIndex = store.orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
             if (orderIndex !== -1) {
-                store.closeOrder(orderIndex);
+                store.placeOrder(orderIndex);
             }
         }
 
         store.selectOrder(null);
 
         selectedTable.value = null;
-        if (!lock_waiter) {
-            selectedWaiter.value = null;
-        }
+
     }
     )
 };
@@ -1092,23 +1160,23 @@ const CancelOrder = () => {
 
     if (!store.selectedOrder) return;
 
-    console.log('store seleced order startus :', store.selectedOrder.closed);
+    console.log('store seleced order startus :', store.selectedOrder.order_placed);
 
-    if (store.selectedOrder.closed) {
+    if (store.selectedOrder.order_placed) {
         toastPrime.add({
             severity: "error",
             summary: "Error",
-            detail: 'This order was closed and sent to the kitchen, Please follow up with the kitchen',
+            detail: 'This order was placed and sent to the kitchen, Please follow up with the kitchen',
             life: 4000,
         });
         return;
     }
     const orderNumber = store.selectedOrder.orderNumber;
-    const index = useMainStore().orders.findIndex(order => order.orderNumber === orderNumber);
+    const index = store.orders.findIndex(order => order.orderNumber === orderNumber);
 
     if (index !== -1) {
-        useMainStore().orders.splice(index, 1);
-        useMainStore().selectOrder(null)
+        store.orders.splice(index, 1);
+        store.selectOrder(null)
     }
 };
 
@@ -1130,20 +1198,7 @@ const verify_order = () => {
                 store.selectedOrder.customer_id = selectedCustomer.value?.id;
             }
 
-            if (!store.selectedOrder.waiter_id) {
-                if (selectedWaiter.value) {
-                    store.selectedOrder.waiter_id = selectedWaiter.value;
-                } else {
-                    toastPrime.add({
-                        severity: "error",
-                        summary: "Error",
-                        detail: 'Please select a waiter',
-                        life: 4000,
-                    });
-                    reject();
-                    return;
-                }
-            }
+
 
             if (orderType.value === "dine_in" && !store.selectedOrder.table_id) {
                 if (selectedTable.value) {
@@ -1153,21 +1208,6 @@ const verify_order = () => {
                         severity: "error",
                         summary: "Error",
                         detail: 'Please select a table',
-                        life: 4000,
-                    });
-                    reject();
-                    return;
-                }
-            }
-
-            if (!store.selectedOrder.waiter_id) {
-                if (selectedWaiter.value) {
-                    store.selectedOrder.waiter_id = selectedWaiter.value;
-                } else {
-                    toastPrime.add({
-                        severity: "error",
-                        summary: "Error",
-                        detail: 'Please select a waiter',
                         life: 4000,
                     });
                     reject();
@@ -1195,7 +1235,7 @@ const printOrder = async () => {
     toastPrime.add({
         severity: "success",
         summary: "Order Queued",
-        detail: 'Order has been closed, please send to kitchen',
+        detail: 'Order has been placed, please send to kitchen',
         life: 4000,
     });
 
@@ -1230,7 +1270,7 @@ const printOrder = async () => {
 
 const sendToKitchen = async (ordernumber) => {
 
-    useMainStore().selectOrder(ordernumber)
+    store.selectOrder(ordernumber)
 
     closeModals()
 

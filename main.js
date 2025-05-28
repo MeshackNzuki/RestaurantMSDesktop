@@ -29,7 +29,7 @@ win = new BrowserWindow({
   }
 })
 
-  if (isDev) {
+if (isDev) {
     win.loadURL('http://localhost:5173').catch(err => {
       console.error('Failed to load dev server:', err);
     });
@@ -70,8 +70,8 @@ ipcMain.on('window-close', (e) => {
     buttons: ['Cancel', 'Close'],
     title: 'Confirm',
     message: 'Are you sure you want to close the app?',
-    defaultId: 1,     // default button
-    cancelId: 0       // cancel button
+    defaultId: 1,    
+    cancelId: 0      
   });
 
   if (choice === 0) {

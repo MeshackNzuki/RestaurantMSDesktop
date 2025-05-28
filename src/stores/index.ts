@@ -1,5 +1,3 @@
-import Orders from "@/views/inventory/Orders.vue";
-import { set } from "@vueuse/core";
 import { defineStore } from "pinia";
 
 export const useMainStore = defineStore("mainStore", {
@@ -13,6 +11,8 @@ export const useMainStore = defineStore("mainStore", {
         zoom_levels: ["text-xs", "text-base", "text-lg", "text-xl", "text-2xl"],
         orders: [] as Order[],
         selectedOrder: null as Order | null,
+        currentWaiter: null as any,
+        showWaiterLoginModal: false,
     }),
 
     getters: {
@@ -30,18 +30,15 @@ export const useMainStore = defineStore("mainStore", {
             if (this.zoom_counter > 0) {
                 this.zoom_counter--;
             }
-        },
-
+        },       
         // other utilities
         toggleSidebar() {
             this.sidebarOpen = !this.sidebarOpen;
         },
-
         //primariry for click outside
         closeSidebar() {
             this.sidebarOpen = false;
         },
-
         updateGreeting() {
             const currentHour = new Date().getHours();
 
@@ -59,7 +56,9 @@ export const useMainStore = defineStore("mainStore", {
             setInterval(this.updateGreeting, 3000);
         },
 
-        addOrderItem(categoryId: number, itemId: number, categories: Category[], selectedCustomer: any, selectedWaiter: any, selectedTable: any) {
+        addOrCreateOrderItem(categoryId: number, itemId: number, categories: Category[], selectedCustomer: any, selectedTable: any) {         
+           
+
             const category = categories.find(c => c.id === categoryId);
             if (!category) return;
           
@@ -67,6 +66,10 @@ export const useMainStore = defineStore("mainStore", {
             if (!item) return;
           
             if (this.orders.length === 0 || !this.selectedOrder) {
+            // Create a new order if no orders exist or no order is selected
+            //verify waiter    
+              this.showWaiterLoginModal = true;          
+
               const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}${Math.floor(Math.random() * 9000) + 1000}`;
               const orderTime = new Date().toISOString();
           
@@ -76,7 +79,7 @@ export const useMainStore = defineStore("mainStore", {
                 order_time: orderTime,
                 items: [],
                 customer_id: selectedCustomer?.id || null,
-                waiter_id: selectedWaiter?.id || null,
+                waiter_id: this.currentWaiter?.id ,
                 table_id: selectedTable?.id || null,
               };
           
@@ -103,7 +106,8 @@ export const useMainStore = defineStore("mainStore", {
             if (this.selectedOrder) {
               this.selectedOrder.items.splice(itemIndex, 1);
             }
-          },          
+          },  
+                  
           reduceOrderItem(itemIndex: number) {
             if (this.selectedOrder && this.selectedOrder.items[itemIndex].quantity > 1) {
               this.selectedOrder.items[itemIndex].quantity -= 1;
@@ -111,14 +115,23 @@ export const useMainStore = defineStore("mainStore", {
         
         },
         selectOrder(orderNumber) { 
+          if  (orderNumber ===null || orderNumber === undefined) {
+            this.selectedOrder = null;          
+            return;}
             const order = this.orders.find(o => o.order_number === orderNumber);
-            this.selectedOrder = order;
+           
+            if (order?.waiter_id === this.currentWaiter.id) {
+                this.selectedOrder = order;
+            }
+           else {           
+          this.showWaiterLoginModal = true;}
         },
         setOrderType(type) { 
             this.selectedOrder.order_type = type;
         },
-        closeOrder(orderIndex) {
-            this.orders[orderIndex].closed = true;
-                    
+
+        placeOrder(orderIndex) {
+            this.orders[orderIndex].order_placed = true;      
+            this.currentWaiter = null;              
         },
 }});

@@ -10,6 +10,32 @@ ipcMain.handle('login', async (event, { username, password }) => {
   }
   return { success: false };
 });
+// Login waiters
+ipcMain.handle('loginWaiter', async (event, { username, password }) => {
+  const waiter = db.prepare('SELECT * FROM waiters WHERE username = ?').get(username);
+  if (waiter && bcrypt.compareSync(password, waiter.password)) {
+    return { success: true, waiter:waiter};
+  }
+  return { success: false };
+});
+
+//add waiter
+ipcMain.handle('addWaiter', async (event, { requester, newWaiter }) => {
+  const admin = db.prepare('SELECT * FROM users WHERE username = ?').get(requester);
+  if (!admin || admin.role !== 1) {
+    return { success: false, message: 'Not authorized' };
+  }
+  try {
+    const hash = bcrypt.hashSync(newWaiter.password, 10);
+    db.prepare('INSERT INTO waiters (username, password) VALUES (?, ?)').run(
+      newWaiter.username,
+      hash
+    );
+    return { success: true };
+  } catch (e) {
+    return { success: false, message: e.message };
+  }
+});
 
 // Change password
 ipcMain.handle('changePassword', async (event, { username, oldPassword, newPassword }) => {
@@ -21,6 +47,8 @@ ipcMain.handle('changePassword', async (event, { username, oldPassword, newPassw
   }
   return { success: false, message: 'Invalid old password' };
 });
+
+
 
 // Add new user (admin only)
 ipcMain.handle('addUser', async (event, { requester, newUser }) => {
