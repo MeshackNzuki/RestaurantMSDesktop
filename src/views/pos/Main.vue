@@ -144,7 +144,6 @@
                                             class="badge badge-error cursor-pointer  text-white hover:scale-105 transition-all duration-300"
                                             @click="() => useMainStore().removeOrderItem(index)">
                                             <i class="pi pi-trash"></i></span>
-
                                     </td>
                                 </tr>
                             </tbody>
@@ -250,7 +249,7 @@
                                     </p>
                                     <hr class="dashed-line">
                                     <p>Order Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
-                                    }}
+                                        }}
                                     </p>
 
                                     <p> Till:576096</p>
@@ -307,7 +306,7 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <p>Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
-                                    }}
+                                        }}
                                     </p>
                                     <p>Order No: {{ store.selectedOrder?.order_number }}</p>
                                 </div>

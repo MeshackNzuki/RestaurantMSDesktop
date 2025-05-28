@@ -18,6 +18,8 @@ win = new BrowserWindow({
   width,
   height,
   frame: false,
+  resizable: true,
+  icon: path.join(__dirname, 'assets/logo.png'),
   titleBarStyle: 'hidden',
   webPreferences: {
     preload: path.join(__dirname, 'preload.js'),

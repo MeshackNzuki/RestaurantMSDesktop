@@ -51,12 +51,12 @@
                 <button class="p-1 flex items-center justify-center" @click="toggleRightPanel()">
                     <i class="pi pi-cog pi-spin text-sm"></i>
                 </button>
-                <button class="p-1 flex items-center justify-center" @click="minimizeWin()">
+                <button class="p-1 flex items-center justify-center hover:bg-gray-600" @click="minimizeWin()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <rect x="5" y="11" width="14" height="1" />
                     </svg>
                 </button>
-                <button class="p-1 flex items-center justify-center" @click="maximizeWin()">
+                <button class="p-1 flex items-center justify-center hover:bg-gray-600" @click="maximizeWin()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="1">
 
@@ -68,7 +68,7 @@
                     </svg>
                 </button>
 
-                <button class="p-1 flex items-center justify-center" @click="closeWin()">
+                <button class="p-1 flex items-center justify-center hover:bg-gray-600" @click="closeWin()">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" stroke="currentColor"
                         stroke-width="1" viewBox="0 0 24 24">
                         <line x1="18" y1="6" x2="6" y2="18" />
