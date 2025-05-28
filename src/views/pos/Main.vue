@@ -114,9 +114,9 @@
                     <span class="mb-2  mt-2">KITCHEN ORDER SUMMERY {{ '(' +
                         store.selectedOrder?.order_number ? store.selectedOrder?.order_number : '' + ')' }}<span
                             class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
-                            @click="clearOrder()"><i class="pi pi-times me-1 text-sm font-light"></i>Close Order</span>
+                            @click="placeOrder()"><i class="pi pi-check me-1 text-sm font-light"></i>Place Order</span>
                         <span class="badge badge-error mx-2 cursor-pointer hover:scale-105 text-white"
-                            @click="CancelOrder()"><i class="pi pi-trash me-1"></i>Cancel this
+                            @click="CancelOrder()"><i class="pi pi-times me-1"></i>Cancel this
                             Order</span></span>
                     <div class="overflow-y-auto  border border-gray-300 rounded-lg max-h-[180px] lg:max-h-[450px] ">
                         <table class="min-w-full ">
@@ -1069,7 +1069,7 @@ const setOrderType = (type) => {
 };
 
 // Clear the selected order
-const clearOrder = async () => {
+const placeOrder = async () => {
     await verify_order().then(() => {
         if (store.selectedOrder) {
             const orderIndex = useMainStore().orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
@@ -1188,7 +1188,7 @@ const printOrder = async () => {
     //commit order
     await verify_order()
 
-    clearOrder()
+    placeOrder()
 
     closeModals()
 
