@@ -1,8 +1,14 @@
+
 import { defineStore } from "pinia";
+
+
+type Intent =
+  | { type: 'select-order', orderNumber: number }
+  | { type: 'add-order-item', categoryId: number, itemId: number, categories : any , selectedCustomer: any, selectedTable: any };
 
 export const useMainStore = defineStore("mainStore", {
     
-    persist: true,
+    //persist: true,
 
     state: () => ({
         zoom_counter: 1,
@@ -13,6 +19,7 @@ export const useMainStore = defineStore("mainStore", {
         selectedOrder: null as Order | null,
         currentWaiter: null as any,
         showWaiterLoginModal: false,
+        intentAfterLogin: null as Intent| null,
     }),
 
     getters: {
@@ -67,8 +74,13 @@ export const useMainStore = defineStore("mainStore", {
           
             if (this.orders.length === 0 || !this.selectedOrder) {
             // Create a new order if no orders exist or no order is selected
-            //verify waiter    
-              this.showWaiterLoginModal = true;          
+            //verify waiter                  
+
+              if (!this.currentWaiter) {
+                this.showWaiterLoginModal = true;
+                this.intentAfterLogin = { type: 'add-order-item', categoryId, itemId, categories ,selectedCustomer, selectedTable,  };
+                return; 
+              }
 
               const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}${Math.floor(Math.random() * 9000) + 1000}`;
               const orderTime = new Date().toISOString();
@@ -114,18 +126,23 @@ export const useMainStore = defineStore("mainStore", {
             }
         
         },
-        selectOrder(orderNumber) { 
-          if  (orderNumber ===null || orderNumber === undefined) {
-            this.selectedOrder = null;          
-            return;}
-            const order = this.orders.find(o => o.order_number === orderNumber);
-           
-            if (order?.waiter_id === this.currentWaiter.id) {
-                this.selectedOrder = order;
-            }
-           else {           
-          this.showWaiterLoginModal = true;}
+        selectOrderWithAuthCheck(orderNumber) {
+          const order = this.orders.find(o => o.order_number === orderNumber);
+        
+          if (!order) {
+            this.selectedOrder = null;
+            return;
+          }
+        
+          if (order.waiter_id !== this.currentWaiter?.id) {
+            this.intentAfterLogin = { type: 'select-order', orderNumber };
+            this.showWaiterLoginModal = true;
+            return;
+          }
+        
+          this.selectedOrder = order;
         },
+        
         setOrderType(type) { 
             this.selectedOrder.order_type = type;
         },

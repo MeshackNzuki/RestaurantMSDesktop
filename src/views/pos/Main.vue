@@ -45,7 +45,7 @@
                     <div v-for="order in store.orders
                         .filter(o => o.order_placed)
                         .sort((a, b) => new Date(b.order_time) - new Date(a.order_time))" :key="order.order_number"
-                        @click="store.selectOrder(order.order_number)"
+                        @click="store.selectOrderWithAuthCheck(order.order_number)"
                         :class="['flex flex-col gap-2 dark:bg-sky-900 overflow-scroll cursor-pointer border border-gray-500 p-2 rounded-lg mb-2',
                             store.selectedOrder?.order_number === order.order_number ? 'bg-gray-200 dark:bg-sky-600 shadow-md shadow-yellow' : '']">
                         <div class="flex justify-between">
@@ -69,7 +69,7 @@
                 </div>
             </div>
             <!-- Center Panel (Scrollable) -->
-            <div class=" relative col-span-5 border border-gray-500 p-4 text-center overflow-y-auto h-full">
+            <div class="relative col-span-5 border border-gray-500 p-4 text-center overflow-y-auto h-full">
                 <div class="sticky top-0 bg-grey-100  dark:bg-sky-950 dark:text-slate-200 z-10 px-4 ">
                     <div class="flex flex-row space-x-1 lg:space-x-4 overflow-x-auto">
                         <CommonButton icon="pi pi-building-columns"
@@ -86,7 +86,10 @@
                         <div
                             class="flex flex-row gap-2 items-center justify-center border rounded-md px-2 border-gray-500">
                             <label for="waiter" class="block text-sm  font-semibold me-2">Waiter:</label>
-                            {{ store.currentWaiter?.name }}
+                            {{ store.currentWaiter?.name }} <span v-if="store.currentWaiter?.name"
+                                class="mx-2 cursor-pointer text-red-500"
+                                @click="() => { store.currentWaiter = null; store.selectedOrder = null }"><i
+                                    class="pi  pi-power-off"></i></span>
                         </div>
                         <div
                             class="flex flex-row gap-2 items-center justify-center border rounded-md px-2 border-gray-500 ">
@@ -499,8 +502,9 @@
                     <div class="relative h-10 w-full mb-4">
                         <div class="flex items-center border border-gray-300 rounded-full p-2 bg-white shadow-md">
                             <i class="pi pi-search mr-2"></i>
-                            <input type="text" v-model="query" placeholder="Search all items..."
-                                class="flex-1 outline-none" />
+                            <input @focus="handleFocus('query')" type=" text" v-model="query"
+                                placeholder="Search all items..." class="flex-1 outline-none" />
+
                         </div>
                     </div>
                     <!-- Category List -->
@@ -746,35 +750,37 @@
             </div>
         </div>
     </dialog>
-    <dialog id="auth" class="modal">
-        <div class="modal-box dark:bg-sky-950 w-80">
-            <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1 dark:text-gray-50">✕</button>
-            </form>
-            <div class="flex align-center justify-center">
-                <div class="p-4 space-y-4  ">
-                    <h2 class="text-lg font-bold dark:text-slate-50">Enter Waiter Credentials</h2>
 
+    <div v-if="store.showWaiterLoginModal"
+        class="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center z-50 bg-gray-900 bg-opacity-50">
 
-                    <div class="flex"><span v-if="message"
-                            class="text-sm w-full px-4 animate animate-pulse text-semibold text-center text-red-600 bg-red-100 rounded-md">{{
-                                message
-                            }}</span>
+        <div class="flex align-center justify-center bg-white dark:bg-sky-950 rounded-lg shadow-lg relative px-6">
 
-                    </div>
-                    <div class="flex flex-col space-y-6">
-                        <input v-model="waiter_id" type="text" placeholder="Waiter ID"
-                            class="input input-sm input-bordered w-full rounded-lg " />
-                        <input v-model="waiter_password" type="password" placeholder="Waiter Password"
-                            class="input  input-sm input-bordered w-full rounded-lg" />
-                        <CommonButton button-text="Proceed" icon2="pi pi-arrow-right text-sm mt-1 ms-1"
-                            :action="() => verifyWaiter()" />
-                    </div>
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1 dark:text-gray-50 text-red-500 "
+                @click="store.showWaiterLoginModal = false">✕</button>
+
+            <div class="p-4 space-y-4  ">
+                <h2 class="text-lg font-bold dark:text-slate-50 mt-3">Enter Waiter Credentials</h2>
+                <div class="flex"><span v-if="message"
+                        class="text-sm w-full px-4 animate animate-pulse text-semibold text-center text-red-600 bg-red-100 rounded-md">{{
+                            message
+                        }}</span>
+                </div>
+                <div class="flex flex-col space-y-6">
+                    <input @focus="handleFocus('waiter-id')" v-model="waiter_id" type="text" placeholder="Waiter ID"
+                        class="input input-sm input-bordered w-full rounded-lg " />
+                    <input @focus="handleFocus('waiter-password')" v-model="waiter_password" type="password"
+                        placeholder="Waiter Password" class="input  input-sm input-bordered w-full rounded-lg" />
+                    <CommonButton button-text="Proceed" icon2="pi pi-arrow-right text-sm mt-1 ms-1"
+                        :action="() => verifyWaiter()" />
                 </div>
             </div>
         </div>
-    </dialog>
+    </div>
+
+
     <dialog id="help" class="modal">
+
         <div class="modal-box dark:text-slate-200 dark:bg-sky-950 ">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1">✕</button>
@@ -793,21 +799,24 @@
                                 class="pi pi-external-link"></i></a>
                     </p>
                 </div>
+
             </div>
+
         </div>
+
     </dialog>
+    <Kb ref="target" v-if="showKeyboard" @input="appendToInput" @backspace="removeChar" @enter="submitInput" />
 </template>
 
 <script setup>
 import { ref, computed, watch, reactive, onMounted } from "vue";
 import CommonButton from "../../components/Buttons/CommonButton.vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
 import { useMainStore } from "../../stores";
 import { useToast } from "primevue/usetoast";
 import { useThemeStore } from "../../stores/Theme";
-import { set } from "@vueuse/core";
-import { main } from "@popperjs/core";
+import Kb from "../../components/Kb/Kb.vue";
+
 
 const toastPrime = useToast();
 
@@ -816,7 +825,6 @@ const store = useMainStore();
 
 const router = useRouter();
 const query = ref("");
-const selectedWaiter = ref(null);
 const selectedTable = ref(null);
 const orderType = ref("dine_in");
 const selectedCustomer = ref(null);
@@ -833,6 +841,8 @@ const message = ref("");
 const categories = ref([]);
 const waiters = ref([]);
 const customers = ref([{ id: 1, name: "Default Customer" }]);
+
+const activeInput = ref("");
 
 onMounted(async () => {
     try {
@@ -908,28 +918,16 @@ watch(query, (newQuery) => {
     }
 });
 
-watch(
-    () => store.showWaiterLoginModal, // <-- this is the correct way
-    (val) => {
-        console.log('auth modal changed:', val)
-        if (val) {
-            showModal("auth") // or your modal logic
-            store.showWaiterLoginModal = false
-        }
-    }
-)
+// watch(
+//     () => store.showWaiterLoginModal,
+//     (val) => {
+//         console.log('auth modal changed:', val)
+//         if (val) {
+//             store.showWaiterLoginModal = false
+//         }
+//     }
+// )
 
-// watch(store.selectedOrder, (newValue, oldValue) => {
-//     console.log("store.selectedOrder changed:", oldValue, "=>", newValue);
-// });
-
-// watch(selectedTable, (newValue, oldValue) => {
-//     console.log("selectedTable changed:", oldValue, "=>", newValue);
-// });
-
-// watch(selectedWaiter, (newValue, oldValue) => {
-//     console.log("selectedWaiter changed:", oldValue, "=>", newValue);
-// });
 
 const setSelectedTable = (tableId) => {
     selectedTable.value = tables.value.find(table => table.id === tableId);
@@ -939,57 +937,6 @@ const setSelectedTable = (tableId) => {
     closeModals();
 };
 
-// const selectOrder = (orderNumber) => {
-//     store.selectedOrder = orders.find(order => order.order_number === orderNumber);
-// };
-
-// const addOrCreateOrderItem = (categoryId, itemId) => {    
-//     let category = categories.value.find(category => category.id === categoryId);
-//     if (category) {
-//         let item = category.foods.find(food => food.id === itemId);
-//         if (item) {
-//             if (orders.length === 0 || !store.selectedOrder) {
-//                 const orderNumber = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}${Math.floor(Math.random() * 9000) + 1000}`;
-//                 const orderTime = new Date().toISOString();
-//                 const newOrder = {
-//                     order_number: orderNumber,
-//                     order_status: "Pending",
-//                     order_time: orderTime,
-//                     items: [],
-//                     customer_id: selectedCustomer.value?.id || null,
-//                     waiter_id: selectedWaiter.value?.id || null,
-//                     table_id: selectedTable.value?.id || null,
-//                 };
-//                 orders.push(newOrder);
-//                 store.selectedOrder = newOrder;
-//             }
-
-//             const existingItemIndex = store.selectedOrder.items.findIndex(orderItem => orderItem.item === item.name);
-//             if (existingItemIndex > -1) {
-//                 store.selectedOrder.items[existingItemIndex].quantity += 1;
-//             } else {
-//                 store.selectedOrder.items.push({
-//                     item: item.name,
-//                     description: item.description,
-//                     amount: item.price,
-//                     quantity: 1,
-//                     item_id: item.id,
-//                     item_category_id: categoryId,
-//                 });
-//             }
-//         }
-//     }
-// };
-
-// const removeOrderItem = (itemIndex) => {
-//     store.selectedOrder.items.splice(itemIndex, 1);
-// };
-
-// const reduceOrderItem = (itemIndex) => {
-//     if (store.selectedOrder.items[itemIndex].quantity > 1) {
-//         store.selectedOrder.items[itemIndex].quantity -= 1;
-//     }
-// };
 
 const computeTotal = computed(() => {
     return store.selectedOrder
@@ -1090,13 +1037,39 @@ const verifyWaiter = async () => {
 
         if (response.success) {
 
+            store.showWaiterLoginModal = false;
+
             store.currentWaiter = response.waiter;
+            waiter_id.value = "";
+            waiter_password.value = "";
 
             closeModals();
 
+            if (store.intentAfterLogin?.type === 'select-order') {
+                const { orderNumber } = store.intentAfterLogin;
+                store.intentAfterLogin = null;
 
-        } else {
-            message.value = "Invalid username or password.";
+                const order = store.orders.find(o => o.order_number === orderNumber);
+
+                if (order.waiter_id !== response.waiter?.id) {
+                    alert(`You are not authorized to access this order no ${orderNumber}. Please select an order assigned to you.`);
+                    return;
+                }
+
+                store.selectOrderWithAuthCheck(orderNumber);
+            }
+
+            else if (store.intentAfterLogin?.type === 'add-order-item') {
+                const { categoryId, itemId, categories, selectedCustomer, selectedTable } = store.intentAfterLogin;
+                store.intentAfterLogin = null;
+                store.addOrCreateOrderItem(categoryId, itemId, categories, selectedCustomer, selectedTable);
+            } else {
+                store.showWaiterLoginModal = false;
+            }
+
+        }
+        else {
+            message.value = response.message || "Invalid credentials. Please try again.";
         }
 
     } catch (error) {
@@ -1148,7 +1121,7 @@ const placeOrder = async () => {
             }
         }
 
-        store.selectOrder(null);
+        store.selectOrderWithAuthCheck(null);
 
         selectedTable.value = null;
 
@@ -1176,7 +1149,8 @@ const CancelOrder = () => {
 
     if (index !== -1) {
         store.orders.splice(index, 1);
-        store.selectOrder(null)
+        store.selectOrderWithAuthCheck(null)
+        store.currentWaiter = null;
     }
 };
 
@@ -1270,7 +1244,7 @@ const printOrder = async () => {
 
 const sendToKitchen = async (ordernumber) => {
 
-    store.selectOrder(ordernumber)
+    store.selectOrderWithAuthCheck(ordernumber)
 
     closeModals()
 
@@ -1354,4 +1328,62 @@ const getRandomImage = () => {
     ]
     return images[Math.floor(Math.random() * images.length)];
 };
+
+
+// keyboard input handling
+
+const showKeyboard = ref(false);
+const target = ref(null); // This should be the element you want to detect clicks outside of
+
+import { onClickOutside } from "@vueuse/core";
+
+
+onClickOutside(target, event => {
+    showKeyboard.value = false;
+    activeInput.value = '';
+    console.log('Clicked outside the keyboard');
+})
+
+const handleFocus = (field) => {
+    setTimeout(() => {
+        activeInput.value = field;
+        showKeyboard.value = true;
+        console.log('Active input set to:', activeInput.value);
+    }, 250);
+};
+
+
+const getActiveModel = () => {
+
+    if (activeInput.value === 'query') return query;
+    if (activeInput.value === 'waiter-password') return waiter_password;
+    if (activeInput.value === 'waiter-id') return waiter_id;
+    return null;
+};
+
+
+
+const appendToInput = (char) => {
+    const target = getActiveModel();
+    if (!target) { console.log('No target', target); return; }
+    target.value += char;
+    console.log('target', target.value);
+};
+
+
+const removeChar = () => {
+    const target = getActiveModel();
+    target.value = target.value.slice(0, -1);
+};
+
+watch(activeInput, (newValue) => {
+    if (newValue === 'waiter-password' || newValue === 'waiter-id' || newValue === 'query') {
+        showKeyboard.value = true;
+    }
+    // } else {
+    //     showKeyboard.value = false;
+    // }
+});
+
+
 </script>
