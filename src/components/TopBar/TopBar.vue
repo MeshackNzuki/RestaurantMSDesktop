@@ -170,7 +170,7 @@ onMounted(() => {
 });
 
 const returnClass = computed(() => {
-    if (route.path === '/pos') {
+    if (route.path.startsWith('/pos')) {
         return 'left-0'
     }
     if (mainStore.sidebarOpen) {

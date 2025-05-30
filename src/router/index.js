@@ -60,7 +60,12 @@ const routes = [
                 path: "",
                 name: "posDashboard",
                 component: () => import("../views/pos/Main.vue"),
-            },         
+            },  
+            {
+                path: "cashier",
+                name: "posCashier",
+                component: () => import("../views/pos/Cashier.vue"),
+            },       
           
         ],
     },

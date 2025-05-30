@@ -45,7 +45,7 @@ if (route.path === "/login") {
     login.value = true;
 }
 
-if (route.path === "/pos") {
+if (route.path.startsWith("/pos")) {
     pos.value = true;
 }
 
@@ -53,7 +53,7 @@ watch(
     () => route.path,
     (newPath) => {
         login.value = newPath === "/login";
-        pos.value = newPath === "/pos";
+        pos.value = newPath.startsWith("/pos");
     },
 );
 
