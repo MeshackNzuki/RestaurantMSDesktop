@@ -29,7 +29,8 @@
                         :action="() => router.push('/sales')" />
                     <CommonButton button-text=" Dashboard" icon="pi pi-wave-pulse"
                         :action="() => router.push('/admin')" />
-                    <CommonButton button-text="" icon="pi pi-power-off" />
+                    <CommonButton button-text="" icon="pi pi-power-off"
+                        :action="() => { store.currentWaiter = null }" />
                 </div>
             </div>
         </div>
@@ -38,12 +39,12 @@
             <!-- Left Panel (Fixed) -->
             <div class="col-span-2 border border-gray-500 p-4 px-1 text-center overflow-y-auto h-full">
                 <span
-                    class="text-center italics sticky top-0 z-10 p-2 bg-blue-100 dark:bg-sky-950 w-full h-full rounded">Latest
-                    on top
+                    class="text-center italics sticky top-0 z-10 p-2 bg-blue-100 dark:bg-sky-950 w-full h-full rounded">My
+                    orders
                 </span>
-                <div v-if="store.orders.length > 0" class="mt-6">
+                <div v-if="store.currentWaiter != null" class="mt-6">
                     <div v-for="order in store.orders
-                        .filter(o => o.order_placed)
+                        .filter(o => o.order_placed && o.waiter_id === store.currentWaiter?.id)
                         .sort((a, b) => new Date(b.order_time) - new Date(a.order_time))" :key="order.order_number"
                         @click="store.selectOrderWithAuthCheck(order.order_number)"
                         :class="['flex flex-col gap-2 dark:bg-sky-900 overflow-scroll cursor-pointer border border-gray-500 p-2 rounded-lg mb-2',
@@ -62,9 +63,11 @@
                         </div>
                     </div>
                 </div>
-                <div v-else>
-                    <span class=" bg-info w-full text-white  text-center alert "><i class="pi pi-info-circle"></i>
-                        No orders to display
+
+                <div v-else class="mt-12" @click="store.showWaiterLoginModal = true">
+                    <span class=" bg-info w-full text-white cursor-pointer text-center alert "><i
+                            class="pi pi-info-circle"></i>
+                        Click to view orders placed by you
                     </span>
                 </div>
             </div>

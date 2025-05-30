@@ -8,7 +8,7 @@ type Intent =
 
 export const useMainStore = defineStore("mainStore", {
     
-    persist: true,
+    //persist: true,
 
     state: () => ({
         zoom_counter: 1,
