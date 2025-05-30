@@ -73,11 +73,16 @@
                 <div class="sticky top-0 bg-grey-100  dark:bg-sky-950 dark:text-slate-200 z-10 px-4 ">
                     <div class="flex flex-row space-x-1 lg:space-x-4 overflow-x-auto">
                         <CommonButton icon="pi pi-building-columns"
-                            :icon2="orderType == 'dine_in' ? 'pi pi-check-circle' : ''" button-text="Dine In"
+                            :icon2="orderType == 'dine_in' ? 'pi pi-check-circle ms-0.5' : ''" button-text="Dine In"
+                            :classes="[orderType == 'dine_in' ? 'bg-yellow border border-yellow text-white' : '']"
                             :action="() => setOrderType('dine_in')" />
-                        <CommonButton icon="pi pi-box" :icon2="orderType == 'take_away' ? 'pi pi-check-circle' : ''"
-                            button-text="Take Away" :action="() => setOrderType('take_away')" />
-                        <CommonButton icon="pi pi-truck" :icon2="orderType == 'delivery' ? 'pi pi-check-circle' : ''"
+                        <CommonButton icon="pi pi-box"
+                            :classes="[orderType == 'take_away' ? 'bg-yellow border border-yellow text-white' : '']"
+                            :icon2="orderType == 'take_away' ? 'pi pi-check-circle ms-0.5' : ''" button-text="Take Away"
+                            :action="() => setOrderType('take_away')" />
+                        <CommonButton icon="pi pi-truck"
+                            :icon2="orderType == 'delivery' ? 'pi pi-check-circle ms-0.5' : ''"
+                            :classes="[orderType == 'delivery' ? 'bg-yellow border border-yellow text-white' : '']"
                             button-text="Delivery" :action="() => setOrderType('delivery')" />
                     </div>
                 </div>
@@ -240,7 +245,7 @@
                                     </p>
                                     <hr class="dashed-line">
                                     <p>Order Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    }}
                                     </p>
 
                                     <p> Till:576096</p>
@@ -297,7 +302,7 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <p>Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    }}
                                     </p>
                                     <p>Order No: {{ store.selectedOrder?.order_number }}</p>
                                 </div>
@@ -677,7 +682,11 @@
                     </div>
                     <div class="flex items-center ml-2">
                         <div class="h-6 w-6 rounded-full bg-gradient-to-r from-red-500  to-rose-600 mr-2"></div>
-                        <div class="dark:text-white ml-2">Reserved</div>
+                        <div class="dark:text-white ml-2">Reserved At the time</div>
+                    </div>
+                    <div class="flex items-center ml-2">
+                        <div class="h-6 w-6 rounded-full bg-gradient-to-r from-yellow-500 "></div>
+                        <div class="dark:text-white ml-2">Has Order</div>
                     </div>
                 </div>
             </div>
@@ -688,11 +697,14 @@
                     <div class="flex flex-wrap w-full justify-center">
                         <div v-for="table in tables" :key="zone.id">
                             <span v-if="table.zone_id == zone.id">
+                                <!--  -->
                                 <span
-                                    class="m-2 flex justify-center rounded-3xl items-center px-4 py-2 cursor-pointer select-none text-white hover:scale-105 transition duration-300"
+                                    class="m-2 flex justify-center relative rounded-3xl items-center px-4 py-2 cursor-pointer select-none text-white hover:scale-105 transition duration-300"
                                     @click="setSelectedTable(table.id)"
                                     :class="getReservationStatus(table.has_reservation_on_date)"
-                                    style="height:70px; width:90px">
+                                    style=" height:70px; width:90px">
+                                    <span
+                                        :class="['absolute badge -top-1 -right-1', checkIftableHasOrder(table.id)]"></span>
                                     <strong>{{ table.name }}</strong>
                                 </span>
                             </span>
@@ -756,7 +768,7 @@
 
         <div class="flex align-center justify-center bg-white dark:bg-sky-950 rounded-lg shadow-lg relative px-6">
 
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1 dark:text-gray-50 text-red-500 "
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1 dark:text-gray-50 text-gray-800 "
                 @click="store.showWaiterLoginModal = false">✕</button>
 
             <div class="p-4 space-y-4  ">
@@ -777,10 +789,7 @@
             </div>
         </div>
     </div>
-
-
     <dialog id="help" class="modal">
-
         <div class="modal-box dark:text-slate-200 dark:bg-sky-950 ">
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-1 top-1">✕</button>
@@ -911,7 +920,6 @@ const handleImageError = (event) => {
     }
 };
 
-
 watch(query, (newQuery) => {
     if (!newQuery) {
         selectedCategory.value = null;
@@ -936,6 +944,13 @@ const setSelectedTable = (tableId) => {
     }
     closeModals();
 };
+
+const checkIftableHasOrder = (tableId) => {
+    const hasOrder = store.orders.some(order => order.table_id === tableId && !order.paid);
+    return hasOrder ? 'bg-yellow' : 'bg-emerald-500';
+
+}
+
 
 
 const computeTotal = computed(() => {
@@ -1052,9 +1067,24 @@ const verifyWaiter = async () => {
                 const order = store.orders.find(o => o.order_number === orderNumber);
 
                 if (order.waiter_id !== response.waiter?.id) {
-                    alert(`You are not authorized to access this order no ${orderNumber}. Please select an order assigned to you.`);
+                    toastPrime.add({
+                        severity: "error",
+                        summary: "Access Denied",
+                        detail: `You are not authorized to access order no ${orderNumber}. Please select an order assigned to you.`,
+                        life: 5000,
+                        position: 'top-center',
+                    });
                     return;
                 }
+
+
+
+                dialog.showMessageBox({
+                    type: 'warning',
+                    title: 'Access Denied',
+                    message: `You are not authorized to access order no ${orderNumber}. Please select an order assigned to you.`,
+                });
+
 
                 store.selectOrderWithAuthCheck(orderNumber);
             }

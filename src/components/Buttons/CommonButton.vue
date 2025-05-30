@@ -8,7 +8,7 @@
             theme?.themes[theme.currentTheme]?.text,
         'px-4 py-1 rounded-full hover:translate-x-1 hover:scale-105 transition whitespace-nowrap duration-200 ease-out shadow-md select-none text-sm',
         'dark:shadow-slate-300 dark:shadow-sm', // Apply dark shadow classes
-        attrib === '' ? '' : 'bg-gray-300', classes, // Additional class when `attrib` is not empty
+        classes, // Additional class when `attrib` is not empty
     ]" @click="handleClick">
         <i :class="`${icon} font-extralight text-sm`"></i>
         {{ buttonText }}<i :class="`${icon2} font-extralight text-sm`"></i>
