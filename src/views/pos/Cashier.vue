@@ -44,9 +44,9 @@
                     <div v-for="order in store.orders
                         .filter(o => o.order_placed)
                         .sort((a, b) => new Date(b.order_time) - new Date(a.order_time))" :key="order.order_number"
-                        @click="store.selectOrderWithAuthCheck(order.order_number)"
+                        @click="setSelectedOrder(order.order_number)"
                         :class="['flex flex-col gap-2 dark:bg-sky-900 overflow-scroll cursor-pointer border border-gray-500 p-2 rounded-lg mb-2',
-                            store.selectedOrder?.order_number === order.order_number ? 'bg-gray-200 dark:bg-sky-600 shadow-md shadow-yellow' : '']">
+                            selected_order?.order_number === order.order_number ? 'bg-gray-200 dark:bg-sky-600 shadow-md shadow-yellow' : '']">
                         <div class="flex justify-between">
                             <span class="font-semibold">{{ order.order_number }}</span>
                             <span :class="['badge text-white cursor-pointer ',
@@ -93,13 +93,13 @@
                             <label for="waiter" class="block text-sm  font-semibold me-2">Waiter:</label>
                             {{ store.currentWaiter?.name }} <span v-if="store.currentWaiter?.name"
                                 class="mx-2 cursor-pointer text-red-500"
-                                @click="() => { store.currentWaiter = null; store.selectedOrder = null }"><i
+                                @click="() => { store.currentWaiter = null; selected_order = null }"><i
                                     class="pi  pi-power-off"></i></span>
                         </div>
 
                     </div>
                     <span class="mb-2  mt-2">ORDER SUMMERY {{ '(' +
-                        store.selectedOrder?.order_number ? store.selectedOrder?.order_number : '' + ')' }}
+                        selected_order?.order_number ? selected_order?.order_number : '' + ')' }}
                     </span>
                     <div class="overflow-y-auto  border border-gray-300 rounded-lg max-h-[180px] lg:max-h-[450px] ">
                         <table class="min-w-full ">
@@ -111,8 +111,8 @@
                                     <th class="py-2 px-2 text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody v-if="store.selectedOrder?.items.length > 0">
-                                <tr v-for="(orderItem, index) in store.selectedOrder?.items" :key="index">
+                            <tbody v-if="selected_order?.items.length > 0">
+                                <tr v-for="(orderItem, index) in selected_order?.items" :key="index">
                                     <td class="py-1 px-2 text-start">{{ orderItem.item }}</td>
                                     <td class="py-1 px-2 flex gap-3 font-mono"><i
                                             @click="() => store.reduceOrderItem(index)"
@@ -136,7 +136,7 @@
                         </table>
                     </div>
                     <div class="w-full flex justify-center text-center mt-2">
-                        <CommonButton v-if="store.selectedOrder?.items.length > 0" :action="() => showModal('invoice')"
+                        <CommonButton v-if="selected_order?.items.length > 0" :action="() => showModal('invoice')"
                             button-text="View / Print Provisional Invoice" />
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                         <div id="invoice"
                             class="w-full bg-gray-50 border mt-3 dark:bg-sky-950 dark:text-slate-200 p-1 rounded-md">
                             <span class="text-italic font-bold underline">Invoice Summary [{{
-                                store.selectedOrder?.order_number }} ]</span>
+                                selected_order?.order_number }} ]</span>
                             <table id="print-invoicex" class=" min-w-full rounded-lg my">
                                 <hr class="">
                                 <thead>
@@ -165,7 +165,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(orderItem, index) in store.selectedOrder?.items" :key="index">
+                                    <tr v-for="(orderItem, index) in selected_order?.items" :key="index">
                                         <td class="py-1 px-2 border-b text-start">
                                             {{ orderItem.item }}
                                         </td>
@@ -227,12 +227,12 @@
                                         after Paying the Bill.
                                     </p>
                                     <hr class="dashed-line">
-                                    <p>Order Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    <p>Order Date: {{ new Date(selected_order?.order_time).toLocaleString()
+                                    }}
                                     </p>
 
                                     <p> Till:576096</p>
-                                    <p>Order No: {{ store.selectedOrder?.order_number }}</p>
+                                    <p>Order No: {{ selected_order?.order_number }}</p>
                                 </div>
                                 <hr class="dashed-line">
                                 <div class="receipt-body">
@@ -241,7 +241,7 @@
                                         <span>AMT</span>
                                     </div>
                                     <hr class="dashed-line">
-                                    <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
+                                    <div v-for="(orderItem, index) in selected_order?.items" :key="index"
                                         class="receipt-item">
                                         <span class="item-desc">{{ orderItem.item }}</span>
                                         <span class="item-amount"> {{ orderItem.amount }}</span>
@@ -271,7 +271,7 @@
                                 <hr class="dashed-line">
                                 <div class="receipt-thankyou">
                                     <p>You were served by : {{waiters.find(waiter => waiter.id ===
-                                        store.selectedOrder?.waiter_id)?.name}}</p>
+                                        selected_order?.waiter_id)?.name}}</p>
                                     <p>Thank you</p>
                                     <small>Solution by gozerolabs.com</small>
                                 </div>
@@ -284,10 +284,10 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
-                                    <p>Date: {{ new Date(store.selectedOrder?.order_time).toLocaleString()
-                                        }}
+                                    <p>Date: {{ new Date(selected_order?.order_time).toLocaleString()
+                                    }}
                                     </p>
-                                    <p>Order No: {{ store.selectedOrder?.order_number }}</p>
+                                    <p>Order No: {{ selected_order?.order_number }}</p>
                                 </div>
                                 <hr class="dashed-line">
                                 <div class="receipt-body">
@@ -296,7 +296,7 @@
                                         <span>AMT</span>
                                     </div>
                                     <hr class="dashed-line">
-                                    <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
+                                    <div v-for="(orderItem, index) in selected_order?.items" :key="index"
                                         class="receipt-item">
                                         <span class="item-desc">{{ orderItem.item }}</span>
                                         <span class="item-amount"> {{ orderItem.amount }}</span>
@@ -342,7 +342,7 @@
                                 <hr class="dashed-line">
                                 <div class="receipt-thankyou">
                                     <p>You were served by : {{waiters.find(waiter => waiter.id ===
-                                        store.selectedOrder?.waiter_id)?.name}}</p>
+                                        selected_order?.waiter_id)?.name}}</p>
                                     <p>Thank you</p>
                                     <small>Solution by gozerolabs.com</small>
                                 </div>
@@ -355,13 +355,13 @@
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
                                     <hr class="dashed-line">
-                                    <p>Order Date:{{ store.selectedOrder?.order_time }}</p>
-                                    <p>Order No: {{ store.selectedOrder?.order_number }}</p>
-                                    <p>Table No: {{tables?.find(t => t.id == store.selectedOrder?.table_id)?.name}}</p>
+                                    <p>Order Date:{{ selected_order?.order_time }}</p>
+                                    <p>Order No: {{ selected_order?.order_number }}</p>
+                                    <p>Table No: {{tables?.find(t => t.id == selected_order?.table_id)?.name}}</p>
                                 </div>
 
                                 <div class="receipt-body">
-                                    <div v-for="(orderItem, index) in store.selectedOrder?.items" :key="index"
+                                    <div v-for="(orderItem, index) in selected_order?.items" :key="index"
                                         class="receipt-item">
                                         <span class="item-desc">{{ orderItem.item }}</span>
                                         <span class="item-amount"> {{ orderItem.amount }}</span>
@@ -370,7 +370,7 @@
 
                                 <div class="receipt-thankyou">
                                     <p>Waiter : {{waiters.find(waiter => waiter.id ===
-                                        store.selectedOrder?.waiter_id)?.name}}</p>
+                                        selected_order?.waiter_id)?.name}}</p>
                                     <small>Solution by gozerolabs.com</small>
                                 </div>
                             </div>
@@ -586,13 +586,9 @@ const store = useMainStore();
 
 const router = useRouter();
 const query = ref("");
-const selectedTable = ref(null);
-const orderType = ref("dine_in");
-const selectedCustomer = ref(null);
 const flashMessage = ref(null)
 const tables = ref(null);
-const zones = ref(null);
-const selectedCategory = ref(null);
+
 const cashAmount = ref(0);
 const waiter_id = ref(null);
 const waiter_password = ref(null);
@@ -602,6 +598,7 @@ const message = ref("");
 const categories = ref([]);
 const waiters = ref([]);
 const customers = ref([{ id: 1, name: "Default Customer" }]);
+const selected_order = ref(null);
 
 const activeInput = ref("");
 
@@ -617,8 +614,8 @@ onMounted(async () => {
 });
 
 const computeTotal = computed(() => {
-    return store.selectedOrder
-        ? store.selectedOrder.items.reduce((total, item) => total + (item.amount * item.quantity), 0)
+    return selected_order.value
+        ? selected_order.value.items.reduce((total, item) => total + (item.amount * item.quantity), 0)
         : 0;
 });
 
@@ -632,11 +629,15 @@ const showModal = async (modalId) => {
     }
 };
 
+const setSelectedOrder = (order_number) => {
+    selected_order.value = orders.find(o => o.order_number === order_number);
+};
+
 const acceptCashPayment = async () => {
 
     await verify_order();
 
-    if (store.selectedOrder.paid) {
+    if (selected_order.paid) {
         toastPrime.add({
             severity: "error",
             summary: "Error",
@@ -699,11 +700,11 @@ const acceptCashPayment = async () => {
 
 
 const markOrderAsPaid = () => {
-    if (store.selectedOrder) {
-        const orderIndex = orders.findIndex(order => order.order_number === store.selectedOrder.order_number);
+    if (selected_order) {
+        const orderIndex = orders.findIndex(order => order.order_number === selected_order?.order_number);
         if (orderIndex !== -1) {
             orders[orderIndex].paid = true;
-            store.selectedOrder = null;
+            selected_order = null;
             toastPrime.add({
                 severity: "success",
                 summary: "Order Paid",
